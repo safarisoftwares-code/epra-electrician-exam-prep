@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Exam - EPRA</title><link rel="stylesheet" href="../css/style.css">
+<style>
+.option{cursor:pointer;transition:all 0.3s;border:3px solid #ddd;padding:15px 20px;margin:10px 0;border-radius:10px;font-size:1.1rem;display:flex;align-items:center;gap:15px}
+.option:hover{border-color:#1976d2;background:#e3f2fd;transform:translateX(5px)}
+.option.selected{border-color:#4caf50!important;background:#e8f5e9!important;font-weight:bold}
+.option .circle{width:30px;height:30px;border:2px solid #999;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:bold}
+.option.selected .circle{border-color:#4caf50;background:#4caf50;color:#fff}
+.qnum{background:#1976d2;color:#fff;padding:8px 16px;border-radius:20px;display:inline-block;margin-bottom:15px}
+.timer-box{background:#ff9800;color:#fff;padding:10px 20px;border-radius:10px;font-size:1.3rem;font-weight:bold;text-align:center;margin:15px 0}
+.review-box{background:#fff;padding:20px;border-radius:12px;margin:15px 0;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.review-box.correct{border-left:5px solid #4caf50}
+.review-box.wrong{border-left:5px solid #f44336}
+.review-box.skipped{border-left:5px solid #ff9800}
+.mark-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-weight:bold;font-size:0.9rem}
+.mark-correct{background:#e8f5e9;color:#2e7d32}
+.mark-wrong{background:#ffebee;color:#c62828}
+.mark-skipped{background:#fff3e0;color:#e65100}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin:20px 0}
+.summary-card{text-align:center;padding:20px;border-radius:12px;color:#fff}
+.summary-total{background:#1976d2}
+.summary-correct{background:#4caf50}
+.summary-wrong{background:#f44336}
+.summary-score{background:#ff9800}
+</style></head>
+<body><nav class="navbar"><h2>EPRA Exam</h2><a href="dashboard.html" class="btn btn-outline">Back</a></nav>
+<div class="exam-container"><h2 style="text-align:center;color:#1a237e">EPRA Certification Exam</h2>
+<div class="timer-box">Time Remaining: <span id="timer">60:00</span></div>
+<button id="startBtn" class="btn btn-primary" style="display:block;margin:20px auto;font-size:1.2rem;padding:15px 40px">Start Exam</button>
+<div id="qArea" style="display:none"></div><div id="resultArea" style="display:none"></div></div>
+<script>
+var qs=[],ci=0,ans={},tl=3600,ti,eid,totalQ=0,answersDetail=[];
+var t=localStorage.getItem("access_token");
+if(!t)location.href="login.html";
+document.getElementById("startBtn").addEventListener("click",function(){
+    fetch("http://localhost:5000/api/exam/start",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({total_questions:5})})
+    .then(function(r){return r.json()}).then(function(d){
+        if(d.error){alert(d.error);return}
+        qs=d.questions;totalQ=qs.length;eid=d.exam_id;
+        document.getElementById("startBtn").style.display="none";showQ();
+        ti=setInterval(function(){tl--;var m=Math.floor(tl/60),s=tl%60;
+        document.getElementById("timer").textContent=m+":"+(s<10?"0":"")+s;if(tl<=0)submitE()},1000)
+    }).catch(function(e){alert("Error: "+e)})
+});
+function showQ(){
+    if(ci>=qs.length){submitE();return}
+    var q=qs[ci];var answered=ans[q.id]?true:false;
+    var h="<div class='question-box'><div class='qnum'>Question "+(ci+1)+" of "+totalQ+"</div>";
+    h+="<p style='font-size:1.3rem;margin:20px 0;line-height:1.6'><b>"+q.question_text+"</b></p>";
+    h+="<p style='color:#666;margin-bottom:15px'>Select one answer:</p>";
+    q.options.forEach(function(o,i){
+        var isSel=ans[q.id]===o;
+        h+="<div class='option"+(isSel?" selected":"")+"' onclick=sel("+q.id+",'"+o.replace(/'/g,"\\'")+"')>";
+        h+="<div class='circle'>"+(isSel?"&#10003;":"")+"</div> "+o+"</div>"
+    });
+    h+="</div><div style='display:flex;gap:15px;justify-content:center;margin-top:25px;flex-wrap:wrap'>";
+    if(ci>0)h+="<button class='btn' style='background:#666;color:#fff;padding:12px 30px' onclick=prevQ()>Previous</button>";
+    if(answered)h+="<button class='btn btn-primary' style='background:#4caf50;padding:12px 30px' onclick=nextQ()>"+(ci<totalQ-1?"Next":"Finish Exam")+"</button>";
+    else h+="<button class='btn' style='padding:12px 30px;background:#999;color:#fff' onclick=nextQ()>Skip</button>";
+    h+="</div>";
+    document.getElementById("qArea").innerHTML=h;
+    document.getElementById("qArea").style.display="block";window.scrollTo(0,0)
+}
+function sel(id,o){ans[id]=o;showQ()}
+function nextQ(){ci++;showQ()}
+function prevQ(){ci--;showQ()}
+function submitE(){
+    clearInterval(ti);
+    document.getElementById("qArea").style.display="none";
+    document.getElementById("resultArea").innerHTML="<div class='question-box' style='text-align:center'><h2>Submitting your exam...</h2><p>Please wait...</p></div>";
+    document.getElementById("resultArea").style.display="block";
+    fetch("http://localhost:5000/api/exam/submit",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({exam_id:eid,answers:ans,time_taken:3600-tl})})
+    .then(function(r){return r.json()}).then(function(d){
+        answersDetail=d.answers_detail||[];
+        var correct=d.correct_count||0,wrong=d.wrong_count||0,skipped=d.skipped||0;
+        var cl=d.passed?"#4caf50":"#f44336";
+        var msg=d.passed?"PASSED! Congratulations!":"Not passed. Keep practicing!";
+        var icon=d.passed?"🎉":"📚";
+        var html="<div class='question-box' style='text-align:center'><h2>"+icon+" Exam Complete!</h2>";
+        html+="<div style='font-size:5rem;color:"+cl+";font-weight:bold;margin:20px 0'>"+d.percentage+"%</div>";
+        html+="<p style='font-size:1.3rem;margin:10px 0;color:"+cl+";font-weight:bold'>"+msg+"</p>";
+        html+="<div class='summary-grid'>";
+        html+="<div class='summary-card summary-total'><h3>"+d.total+"</h3><p>Total Questions</p></div>";
+        html+="<div class='summary-card summary-correct'><h3>"+correct+"</h3><p>Correct ✓</p></div>";
+        html+="<div class='summary-card summary-wrong'><h3>"+wrong+"</h3><p>Wrong ✗</p></div>";
+        html+="<div class='summary-card summary-score'><h3>"+d.percentage+"%</h3><p>Score</p></div>";
+        html+="</div>";
+        html+="<p style='color:#666;margin:10px 0'>Pass mark: <b>70%</b> | Time taken: <b>"+Math.floor((3600-tl)/60)+"m "+(3600-tl)%60+"s</b></p>";
+        html+="<div style='margin:20px 0;display:flex;gap:15px;justify-content:center'><a href='dashboard.html' class='btn btn-primary'>Dashboard</a><a href='exam.html' class='btn' style='background:#1976d2;color:#fff'>Retake Exam</a></div></div>";
+        html+="<h3 style='color:#1a237e;margin-top:30px'>Marking Scheme - Review Your Answers</h3>";
+        for(var i=0;i<qs.length;i++){
+            var q=qs[i],ad=answersDetail.find(function(a){return a.question_id==q.id});
+            var userAns=ad?ad.selected_answer:null,isCorrect=ad?ad.is_correct:false;
+            var boxClass=userAns?(isCorrect?"correct":"wrong"):"skipped";
+            var badgeClass=userAns?(isCorrect?"mark-correct":"mark-wrong"):"mark-skipped";
+            var badgeText=userAns?(isCorrect?"CORRECT":"WRONG"):"SKIPPED";
+            html+="<div class='review-box "+boxClass+"'>";
+            html+="<div style='display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px'>";
+            html+="<h4>Q"+(i+1)+": "+q.question_text+"</h4>";
+            html+="<span class='mark-badge "+badgeClass+"'>"+badgeText+"</span></div>";
+            html+="<p style='margin:8px 0'><b>Your answer:</b> "+(userAns||"<i>No answer</i>")+"</p>";
+            if(!isCorrect && userAns){
+                html+="<p style='color:#c62828;margin:5px 0'><b>Correct answer:</b> "+q.correct_answer+"</p>";
+            }
+            if(q.explanation)html+="<p style='color:#555;margin:5px 0'><b>Explanation:</b> "+q.explanation+"</p>";
+            if(q.practical_tip)html+="<p style='color:#1976d2;margin:5px 0'><b>Field Tip:</b> "+q.practical_tip+"</p>";
+            html+="</div>";
+        }
+        document.getElementById("resultArea").innerHTML=html
+    }).catch(function(e){document.getElementById("resultArea").innerHTML="<p style='color:red'>Error: "+e.message+"</p>"})
+}
+</script></body></html>

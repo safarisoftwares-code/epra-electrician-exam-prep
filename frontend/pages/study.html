@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Study - EPRA</title><link rel="stylesheet" href="../css/style.css">
+<style>
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;justify-content:center}
+.filter-btn{padding:8px 16px;border-radius:20px;border:2px solid #1976d2;background:#fff;color:#1976d2;cursor:pointer;font-weight:600;transition:all 0.3s}
+.filter-btn:hover,.filter-btn.active{background:#1976d2;color:#fff}
+.show-btn{background:#4caf50;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;margin-top:10px}
+.show-btn:hover{background:#388e3c}
+.answer-box{display:none;margin-top:15px;padding:15px;background:#e8f5e9;border-radius:8px;border-left:4px solid #4caf50}
+.category-badge{display:inline-block;padding:4px 10px;border-radius:15px;font-size:0.75rem;font-weight:600;margin-left:10px}
+.question-count{text-align:center;color:#666;margin-bottom:15px}
+</style></head>
+<body><nav class="navbar"><h2>Study Mode</h2><a href="dashboard.html" class="btn btn-outline">Back</a></nav>
+<div class="exam-container"><h2 style="text-align:center;color:#1a237e">Study Materials</h2>
+<p class="question-count">Total questions: <b id="totalCount">0</b> | Showing: <b id="showingCount">0</b></p>
+<div class="filter-bar" id="filterBar"></div>
+<div id="c"><p style="text-align:center;padding:50px">Loading questions...</p></div></div>
+<script>
+var t=localStorage.getItem("access_token");
+var allQuestions=[],currentFilter="all";
+if(!t)location.href="login.html";
+
+fetch("http://localhost:5000/api/questions?limit=100",{headers:{"Authorization":"Bearer "+t}})
+.then(function(r){return r.json()})
+.then(function(d){
+    allQuestions=d.questions||[];
+    document.getElementById("totalCount").textContent=allQuestions.length;
+    
+    var categories=[];
+    allQuestions.forEach(function(q){
+        if(categories.indexOf(q.category)===-1)categories.push(q.category);
+    });
+    var filterHTML='<button class="filter-btn active" onclick="filterQuestions(\"all\")">All ('+allQuestions.length+')</button>';
+    categories.forEach(function(cat){
+        var count=allQuestions.filter(function(q){return q.category===cat}).length;
+        filterHTML+='<button class="filter-btn" onclick="filterQuestions(\"'+cat+'\")">'+cat.replace(/_/g," ")+' ('+count+')</button>';
+    });
+    document.getElementById("filterBar").innerHTML=filterHTML;
+    displayQuestions(allQuestions);
+})
+.catch(function(e){document.getElementById("c").innerHTML="<p style='color:red;text-align:center'>Error: "+e.message+"</p>"});
+
+function filterQuestions(cat){
+    currentFilter=cat;
+    var btns=document.querySelectorAll(".filter-btn");
+    btns.forEach(function(b){b.classList.remove("active")});
+    event.target.classList.add("active");
+    var filtered=cat==="all"?allQuestions:allQuestions.filter(function(q){return q.category===cat});
+    displayQuestions(filtered);
+}
+
+function displayQuestions(questions){
+    document.getElementById("showingCount").textContent=questions.length;
+    if(questions.length===0){
+        document.getElementById("c").innerHTML="<p style='text-align:center'>No questions in this category</p>";
+        return;
+    }
+    var h="";
+    questions.forEach(function(q,i){
+        var badgeColors={
+            "safety":"#f44336","safety_regulations":"#f44336",
+            "installation":"#2196f3","installation_practices":"#2196f3",
+            "testing":"#9c27b0","testing_inspection":"#9c27b0",
+            "kenya_power":"#ff9800","calculations":"#4caf50",
+            "earthing":"#795548","earthing_bonding":"#795548",
+            "regulations":"#607d8b","regulations_standards":"#607d8b"
+        };
+        var color=badgeColors[q.category]||"#1976d2";
+        h+="<div class='question-box'><div style='display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px'>";
+        h+="<h3>Q"+(i+1)+": "+q.question_text+"</h3>";
+        h+="<span class='category-badge' style='background:"+color+";color:#fff'>"+q.category.replace(/_/g," ")+"</span></div>";
+        h+="<p style='color:#666;font-size:0.9rem;margin:5px 0'><b>Regulation:</b> "+(q.regulation_reference||"N/A")+"</p>";
+        h+="<button class='show-btn' onclick=\"document.getElementById('a"+i+"').style.display='block';this.style.display='none'\">Show Answer</button>";
+        h+="<div id='a"+i+"' class='answer-box'>";
+        h+="<p><b>Correct Answer:</b> <span style='font-size:1.1rem;color:#2e7d32'>"+(q.correct_answer||"N/A")+"</span></p>";
+        h+="<p><b>Explanation:</b> "+(q.explanation||"N/A")+"</p>";
+        if(q.practical_tip)h+="<p><b>Field Tip:</b> "+q.practical_tip+"</p>";
+        h+="</div></div>";
+    });
+    document.getElementById("c").innerHTML=h;
+}
+</script></body></html>
