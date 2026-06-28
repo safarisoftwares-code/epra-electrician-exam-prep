@@ -22,17 +22,45 @@
 .summary-correct{background:#4caf50}
 .summary-wrong{background:#f44336}
 .summary-score{background:#ff9800}
+.practical-scenario{background:#fff3e0;padding:20px;border-radius:12px;border-left:5px solid #ff9800;margin:15px 0}
+.practical-scenario h4{color:#e65100}
+.practical-steps{background:#e8f5e9;padding:15px;border-radius:8px;margin:10px 0}
+.practical-steps li{margin:5px 0;color:#2e7d32}
+.tab-btn{padding:12px 24px;border:none;cursor:pointer;font-weight:600;font-size:1rem;transition:all 0.3s;background:#ddd;color:#333}
+.tab-btn.active{background:#1976d2;color:#fff}
+.tab-btn:first-child{border-radius:10px 0 0 10px}
+.tab-btn:last-child{border-radius:0 10px 10px 0}
 </style></head>
 <body><nav class="navbar"><h2>EPRA Exam</h2><a href="dashboard.html" class="btn btn-outline">Back</a></nav>
-<div class="exam-container"><h2 style="text-align:center;color:#1a237e">EPRA Certification Exam</h2>
+<div class="exam-container">
+<h2 style="text-align:center;color:#1a237e">EPRA Certification Exam</h2>
+<div style="display:flex;justify-content:center;margin:15px 0">
+<button class="tab-btn active" onclick="switchMode('theory')">Theory Exam</button>
+<button class="tab-btn" onclick="switchMode('practical')">Practical Paper</button>
+</div>
 <div class="timer-box">Time Remaining: <span id="timer">60:00</span></div>
 <button id="startBtn" class="btn btn-primary" style="display:block;margin:20px auto;font-size:1.2rem;padding:15px 40px">Start Exam</button>
 <div id="qArea" style="display:none"></div><div id="resultArea" style="display:none"></div></div>
 <script>
-var qs=[],ci=0,ans={},tl=3600,ti,eid,totalQ=0,answersDetail=[];
+var qs=[],ci=0,ans={},tl=3600,ti,eid,totalQ=0,currentMode="theory";
 var t=localStorage.getItem("access_token");
 if(!t)location.href="login.html";
+
+function switchMode(mode){
+    currentMode=mode;
+    document.querySelectorAll(".tab-btn").forEach(function(b,i){
+        b.classList.toggle("active",(i===0&&mode==="theory")||(i===1&&mode==="practical"));
+    });
+    document.getElementById("startBtn").textContent="Start "+(mode==="theory"?"Theory":"Practical")+" Exam";
+    document.getElementById("startBtn").style.display="block";
+    document.getElementById("qArea").style.display="none";
+    document.getElementById("resultArea").style.display="none";
+    clearInterval(ti);qs=[];ci=0;ans={};tl=3600;
+    document.getElementById("timer").textContent="60:00";
+}
+
 document.getElementById("startBtn").addEventListener("click",function(){
+    if(currentMode==="practical"){startPractical();return}
     fetch("http://localhost:5000/api/exam/start",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({total_questions:5})})
     .then(function(r){return r.json()}).then(function(d){
         if(d.error){alert(d.error);return}
@@ -42,6 +70,14 @@ document.getElementById("startBtn").addEventListener("click",function(){
         document.getElementById("timer").textContent=m+":"+(s<10?"0":"")+s;if(tl<=0)submitE()},1000)
     }).catch(function(e){alert("Error: "+e)})
 });
+
+function handleSelect(el){
+    var id=parseInt(el.getAttribute("data-qid"));
+    var o=el.getAttribute("data-opt");
+    o=o.replace(/&#39;/g,"'").replace(/&quot;/g,'"');
+    ans[id]=o;showQ();
+}
+
 function showQ(){
     if(ci>=qs.length){submitE();return}
     var q=qs[ci];var answered=ans[q.id]?true:false;
@@ -50,63 +86,162 @@ function showQ(){
     h+="<p style='color:#666;margin-bottom:15px'>Select one answer:</p>";
     q.options.forEach(function(o,i){
         var isSel=ans[q.id]===o;
-        h+="<div class='option"+(isSel?" selected":"")+"' onclick=sel("+q.id+",'"+o.replace(/'/g,"\\'")+"')>";
+        h+="<div class='option"+(isSel?" selected":"")+"' data-qid='"+q.id+"' data-opt='"+o.replace(/'/g,"&#39;").replace(/"/g,"&quot;")+"' onclick='handleSelect(this)'>";
         h+="<div class='circle'>"+(isSel?"&#10003;":"")+"</div> "+o+"</div>"
     });
     h+="</div><div style='display:flex;gap:15px;justify-content:center;margin-top:25px;flex-wrap:wrap'>";
-    if(ci>0)h+="<button class='btn' style='background:#666;color:#fff;padding:12px 30px' onclick=prevQ()>Previous</button>";
-    if(answered)h+="<button class='btn btn-primary' style='background:#4caf50;padding:12px 30px' onclick=nextQ()>"+(ci<totalQ-1?"Next":"Finish Exam")+"</button>";
-    else h+="<button class='btn' style='padding:12px 30px;background:#999;color:#fff' onclick=nextQ()>Skip</button>";
+    if(ci>0)h+="<button class='btn' style='background:#666;color:#fff;padding:12px 30px' onclick='prevQ()'>Previous</button>";
+    if(answered)h+="<button class='btn btn-primary' style='background:#4caf50;padding:12px 30px' onclick='nextQ()'>"+(ci<totalQ-1?"Next":"Finish Exam")+"</button>";
+    else h+="<button class='btn' style='padding:12px 30px;background:#999;color:#fff' onclick='nextQ()'>Skip</button>";
     h+="</div>";
     document.getElementById("qArea").innerHTML=h;
     document.getElementById("qArea").style.display="block";window.scrollTo(0,0)
 }
-function sel(id,o){ans[id]=o;showQ()}
+
 function nextQ(){ci++;showQ()}
 function prevQ(){ci--;showQ()}
+
 function submitE(){
+    var skipped=0;
+    for(var i=0;i<qs.length;i++){if(!ans[qs[i].id])skipped++;}
+    if(skipped>0){
+        var msg="You have "+skipped+" unanswered question(s).\n\nClick OK to submit anyway, or Cancel to go back.";
+        if(!confirm(msg))return;
+    }
     clearInterval(ti);
     document.getElementById("qArea").style.display="none";
-    document.getElementById("resultArea").innerHTML="<div class='question-box' style='text-align:center'><h2>Submitting your exam...</h2><p>Please wait...</p></div>";
+    document.getElementById("resultArea").innerHTML="<div class='question-box' style='text-align:center'><h2>Submitting...</h2></div>";
     document.getElementById("resultArea").style.display="block";
     fetch("http://localhost:5000/api/exam/submit",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({exam_id:eid,answers:ans,time_taken:3600-tl})})
     .then(function(r){return r.json()}).then(function(d){
-        answersDetail=d.answers_detail||[];
         var correct=d.correct_count||0,wrong=d.wrong_count||0,skipped=d.skipped||0;
         var cl=d.passed?"#4caf50":"#f44336";
         var msg=d.passed?"PASSED! Congratulations!":"Not passed. Keep practicing!";
-        var icon=d.passed?"🎉":"📚";
-        var html="<div class='question-box' style='text-align:center'><h2>"+icon+" Exam Complete!</h2>";
+        var html="<div class='question-box' style='text-align:center'><h2>Exam Complete!</h2>";
         html+="<div style='font-size:5rem;color:"+cl+";font-weight:bold;margin:20px 0'>"+d.percentage+"%</div>";
-        html+="<p style='font-size:1.3rem;margin:10px 0;color:"+cl+";font-weight:bold'>"+msg+"</p>";
+        html+="<p style='font-size:1.3rem;color:"+cl+";font-weight:bold'>"+msg+"</p>";
         html+="<div class='summary-grid'>";
-        html+="<div class='summary-card summary-total'><h3>"+d.total+"</h3><p>Total Questions</p></div>";
-        html+="<div class='summary-card summary-correct'><h3>"+correct+"</h3><p>Correct ✓</p></div>";
-        html+="<div class='summary-card summary-wrong'><h3>"+wrong+"</h3><p>Wrong ✗</p></div>";
+        html+="<div class='summary-card summary-total'><h3>"+d.total+"</h3><p>Total</p></div>";
+        html+="<div class='summary-card summary-correct'><h3>"+correct+"</h3><p>Correct</p></div>";
+        html+="<div class='summary-card summary-wrong'><h3>"+wrong+"</h3><p>Wrong</p></div>";
         html+="<div class='summary-card summary-score'><h3>"+d.percentage+"%</h3><p>Score</p></div>";
-        html+="</div>";
-        html+="<p style='color:#666;margin:10px 0'>Pass mark: <b>70%</b> | Time taken: <b>"+Math.floor((3600-tl)/60)+"m "+(3600-tl)%60+"s</b></p>";
-        html+="<div style='margin:20px 0;display:flex;gap:15px;justify-content:center'><a href='dashboard.html' class='btn btn-primary'>Dashboard</a><a href='exam.html' class='btn' style='background:#1976d2;color:#fff'>Retake Exam</a></div></div>";
-        html+="<h3 style='color:#1a237e;margin-top:30px'>Marking Scheme - Review Your Answers</h3>";
-        for(var i=0;i<qs.length;i++){
-            var q=qs[i],ad=answersDetail.find(function(a){return a.question_id==q.id});
-            var userAns=ad?ad.selected_answer:null,isCorrect=ad?ad.is_correct:false;
-            var boxClass=userAns?(isCorrect?"correct":"wrong"):"skipped";
-            var badgeClass=userAns?(isCorrect?"mark-correct":"mark-wrong"):"mark-skipped";
-            var badgeText=userAns?(isCorrect?"CORRECT":"WRONG"):"SKIPPED";
-            html+="<div class='review-box "+boxClass+"'>";
+        html+="</div><p style='color:#666'>Pass mark: 70% | Time: "+Math.floor((3600-tl)/60)+"m "+(3600-tl)%60+"s</p>";
+        html+="<div style='margin:20px 0;display:flex;gap:15px;justify-content:center'><a href='dashboard.html' class='btn btn-primary'>Dashboard</a><a href='exam.html' class='btn' style='background:#1976d2;color:#fff'>Retake</a></div></div>";
+        html+="<h3 style='color:#1a237e;margin-top:30px'>Marking Scheme</h3>";
+        qs.forEach(function(q,i){
+            var userAns=ans[q.id]||null,isCorrect=userAns===q.correct_answer;
+            var cls=userAns?(isCorrect?"correct":"wrong"):"skipped";
+            var badge=userAns?(isCorrect?"CORRECT":"WRONG"):"SKIPPED";
+            var badgeCls=userAns?(isCorrect?"mark-correct":"mark-wrong"):"mark-skipped";
+            html+="<div class='review-box "+cls+"'>";
             html+="<div style='display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px'>";
             html+="<h4>Q"+(i+1)+": "+q.question_text+"</h4>";
-            html+="<span class='mark-badge "+badgeClass+"'>"+badgeText+"</span></div>";
-            html+="<p style='margin:8px 0'><b>Your answer:</b> "+(userAns||"<i>No answer</i>")+"</p>";
-            if(!isCorrect && userAns){
-                html+="<p style='color:#c62828;margin:5px 0'><b>Correct answer:</b> "+q.correct_answer+"</p>";
-            }
-            if(q.explanation)html+="<p style='color:#555;margin:5px 0'><b>Explanation:</b> "+q.explanation+"</p>";
-            if(q.practical_tip)html+="<p style='color:#1976d2;margin:5px 0'><b>Field Tip:</b> "+q.practical_tip+"</p>";
+            html+="<span class='mark-badge "+badgeCls+"'>"+badge+"</span></div>";
+            html+="<p><b>Your answer:</b> "+(userAns||"<i>No answer</i>")+"</p>";
+            if(!isCorrect&&userAns)html+="<p style='color:#c62828'><b>Correct:</b> "+q.correct_answer+"</p>";
+            if(q.explanation)html+="<p style='color:#555'><b>Explanation:</b> "+q.explanation+"</p>";
+            if(q.practical_tip)html+="<p style='color:#1976d2'><b>Field Tip:</b> "+q.practical_tip+"</p>";
             html+="</div>";
-        }
+        });
         document.getElementById("resultArea").innerHTML=html
     }).catch(function(e){document.getElementById("resultArea").innerHTML="<p style='color:red'>Error: "+e.message+"</p>"})
+}
+
+// PRACTICAL EXAM MODE
+function startPractical(){
+    document.getElementById("startBtn").style.display="none";
+    document.getElementById("timer").textContent="30:00";tl=1800;
+    var practicalQuestions=[
+        {scenario:"You arrive at a house where the RCD keeps tripping when the shower is used. Describe your fault-finding procedure step by step.",
+         steps:["Perform safe isolation - prove dead, lock off, keep key",
+                "Visual inspection of shower unit for water ingress or damage",
+                "Check cable condition and connections at shower isolator",
+                "Test heating element for earth leakage using insulation tester",
+                "Test RCD for correct operation at 1x and 5x rated current",
+                "Measure insulation resistance of shower circuit",
+                "Check for loose connections causing intermittent faults"],
+         keyPoints:"Safety first! The RCD is doing its job - don't bypass it. Water + electricity = danger. Always test, never assume."},
+        {scenario:"A client wants to add 6 double sockets in their living room. The existing circuit has 4 double sockets on a 20A MCB with 2.5mm2 cable. What considerations and calculations do you make?",
+         steps:["Calculate total expected load/demand for new sockets",
+                "Verify existing cable capacity (2.5mm2 = 27A clipped direct)",
+                "Check if existing 20A MCB is adequate or needs upgrade",
+                "Consider changing to ring final circuit or upgrading to 32A radial",
+                "Check voltage drop for the extended circuit length",
+                "Ensure additional RCD protection (30mA) for all socket outlets",
+                "Verify safe zones for cable routing in walls"],
+         keyPoints:"2.5mm2 radial on 20A is limited. Consider converting to ring or upgrading. Always check voltage drop on long runs."},
+        {scenario:"You need to install a 8.5kW electric shower in a bathroom. Describe the complete installation process including cable sizing, protection, and safety considerations.",
+         steps:["Calculate load: 8500/240 = 35.4A - use 40A MCB with 6mm2 or 10mm2 cable",
+                "Check bathroom zones - shower unit location relative to bath/shower",
+                "Install double-pole isolator switch outside bathroom (pull cord or wall switch)",
+                "Run dedicated circuit from consumer unit - not a spur from ring",
+                "Ensure 30mA RCD protection for the shower circuit",
+                "Apply supplementary bonding if required in bathroom",
+                "Test: continuity, insulation resistance, polarity, Zs, RCD trip time"],
+         keyPoints:"35.4A is close to 6mm2 limit for long runs - consider 10mm2. Never spur from ring for high-power appliances!"},
+        {scenario:"During a periodic inspection, you find a ring final circuit with no continuity on the neutral conductor. The line and earth are continuous. What does this indicate and what action do you take?",
+         steps:["This indicates a break in the neutral ring - circuit is now two radials",
+                "Identify the break location by splitting the ring and testing segments",
+                "Common causes: loose connection at socket terminal, damaged cable in wall",
+                "If on 32A MCB, this is dangerous - 2.5mm2 radials on 32A = fire risk",
+                "Temporary solution: downgrade MCB to 20A until break is found",
+                "Systematic approach: test from CU outward, check each socket",
+                "Document findings and issue appropriate certificate with limitations"],
+         keyPoints:"A broken ring on 32A MCB is a Code C2 - Potentially Dangerous. Fix it or downgrade the breaker immediately!"},
+        {scenario:"You are to install a consumer unit change in a domestic property. Describe the full procedure from start to finish.",
+         steps:["Contact Kenya Power to remove service fuse (or use safe isolation if cut-out accessible)",
+                "Prove dead at existing CU - test all circuits",
+                "Label all circuits before disconnecting - take photos",
+                "Install new CU with adequate IP rating for location",
+                "Connect main earth and bonding conductors first (10mm2 minimum)",
+                "Connect circuits one by one, testing each before energizing",
+                "Full test sequence: continuity, IR, polarity, Zs, RCD, functional tests",
+                "Complete Electrical Installation Certificate with all test results"],
+         keyPoints:"Never work live! CU change requires full testing and certification. This is notifiable work in Kenya."}
+    ];
+    qs=practicalQuestions;totalQ=qs.length;ci=0;
+    showPracticalQ();
+    ti=setInterval(function(){tl--;var m=Math.floor(tl/60),s=tl%60;
+        document.getElementById("timer").textContent=m+":"+(s<10?"0":"")+s;if(tl<=0)finishPractical()},1000)
+}
+
+function showPracticalQ(){
+    if(ci>=qs.length){finishPractical();return}
+    var q=qs[ci];
+    var h="<div class='practical-scenario'><div class='qnum'>Scenario "+(ci+1)+" of "+totalQ+"</div>";
+    h+="<h4>Practical Assessment Question</h4>";
+    h+="<p style='font-size:1.2rem;margin:15px 0;line-height:1.6'>"+q.scenario+"</p>";
+    h+="<div class='practical-steps'><h4 style='color:#2e7d32'>Required Steps/Points:</h4><ol>";
+    q.steps.forEach(function(s){h+="<li>"+s+"</li>"});
+    h+="</ol></div>";
+    h+="<div style='background:#e3f2fd;padding:15px;border-radius:8px;margin:10px 0'>";
+    h+="<h4 style='color:#1565c0'>Key Safety Points:</h4><p>"+q.keyPoints+"</p></div>";
+    h+="<p style='color:#666;margin:10px 0'>Rate your knowledge (self-assessment):</p>";
+    ["I can do this confidently","I understand but need practice","I need more training"].forEach(function(r,i){
+        h+="<div class='option"+(ans[ci]===i?" selected":"")+"' onclick='ans["+ci+"]="+i+";showPracticalQ()'>";
+        h+="<div class='circle'>"+(ans[ci]===i?"&#10003;":"")+"</div> "+r+"</div>"
+    });
+    h+="</div><div style='display:flex;gap:15px;justify-content:center;margin-top:25px'>";
+    if(ci>0)h+="<button class='btn' style='background:#666;color:#fff;padding:12px 30px' onclick='ci--;showPracticalQ()'>Previous</button>";
+    h+="<button class='btn btn-primary' style='padding:12px 30px' onclick='ci++;showPracticalQ()'>"+(ci<totalQ-1?"Next Scenario":"Finish Practical")+"</button>";
+    h+="</div>";
+    document.getElementById("qArea").innerHTML=h;
+    document.getElementById("qArea").style.display="block";window.scrollTo(0,0)
+}
+
+function finishPractical(){
+    clearInterval(ti);
+    document.getElementById("qArea").style.display="none";
+    var html="<div class='question-box' style='text-align:center'><h2>Practical Assessment Complete!</h2>";
+    html+="<p style='font-size:1.2rem;margin:20px 0'>You have reviewed <b>"+totalQ+"</b> practical scenarios.</p>";
+    html+="<p style='color:#666'>These scenarios cover common EPRA practical test situations.</p>";
+    html+="<div class='practical-steps' style='text-align:left'><h4>Practical Exam Tips:</h4><ul>";
+    html+="<li>Always demonstrate safe isolation first</li><li>Use proper test equipment - not just a multimeter</li>";
+    html+="<li>Follow CIPELR testing sequence</li><li>Explain what you are doing as you work</li>";
+    html+="<li>Reference regulations when answering oral questions</li></ul></div>";
+    html+="<div style='margin:20px 0'><a href='dashboard.html' class='btn btn-primary'>Dashboard</a> ";
+    html+="<a href='exam.html' class='btn' style='background:#1976d2;color:#fff'>More Practice</a></div></div>";
+    document.getElementById("resultArea").innerHTML=html;
+    document.getElementById("resultArea").style.display="block"
 }
 </script></body></html>
