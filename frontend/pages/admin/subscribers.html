@@ -1,0 +1,7 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Subscribers - Admin</title><link rel="stylesheet" href="../../css/style.css"></head>
+<body><nav class="navbar"><h2>Subscribers</h2><div><a href="dashboard.html" class="nav-link">Dashboard</a><a href="keys.html" class="nav-link">Keys</a><a href="payments.html" class="nav-link">Payments</a><a href="subscribers.html" class="nav-link">Subscribers</a><a href="settings.html" class="nav-link">Settings</a><button onclick="logout()" class="btn btn-outline">Logout</button></div></nav>
+<div style="max-width:1000px;margin:2rem auto;padding:1rem"><h1>Premium Subscribers</h1><div id="subs"></div></div>
+<script>var t=localStorage.getItem("admin_token");if(!t)location.href="login.html";
+fetch("http://localhost:5000/api/admin/subscribers",{headers:{"Authorization":"Bearer "+t}}).then(r=>r.json()).then(d=>{var h="<table style='width:100%;background:#fff;border-radius:10px;padding:20px'><tr><th>User</th><th>Email</th><th>Plan</th><th>Status</th><th>Expires</th></tr>";d.forEach(function(s){h+="<tr><td>"+s.user.full_name+"</td><td>"+s.user.email+"</td><td>"+s.plan+"</td><td style='color:"+(s.status==='active'?'#4caf50':'#f44336')+"'>"+s.status+"</td><td>"+(s.end_date||"N/A")+"</td></tr>"});h+="</table>";document.getElementById("subs").innerHTML=h||"<p>No subscribers yet</p>"});
+function logout(){localStorage.removeItem("admin_token");location.href="login.html"}
+</script></body></html>

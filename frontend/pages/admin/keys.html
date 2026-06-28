@@ -1,0 +1,64 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Keys - Admin</title><link rel="stylesheet" href="../../css/style.css">
+<style>
+.key-box{background:#e8f5e9;padding:15px;margin:10px 0;border-radius:8px;border-left:4px solid #4caf50;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.key-box.used{background:#ffebee;border-left-color:#f44336}
+.copy-btn{background:#1976d2;color:#fff;border:none;padding:8px 16px;border-radius:5px;cursor:pointer;font-size:0.9rem}
+.copy-btn:hover{background:#1565c0}
+.print-btn{background:#ff9800;color:#fff;border:none;padding:8px 16px;border-radius:5px;cursor:pointer;font-size:0.9rem}
+.print-btn:hover{background:#f57c00}
+.receipt{background:#fff;padding:20px;border:2px dashed #ccc;max-width:400px;margin:10px 0;display:none}
+.receipt h3{color:#1a237e;text-align:center}
+.receipt .detail{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dotted #ccc}
+@media print{body *{visibility:hidden}.receipt,.receipt *{visibility:visible}.receipt{position:absolute;left:0;top:0;width:100%}}
+</style></head>
+<body><nav class="navbar"><h2>Activation Keys</h2><div><a href="dashboard.html" class="nav-link">Dashboard</a><a href="keys.html" class="nav-link">Keys</a><a href="payments.html" class="nav-link">Payments</a><a href="subscribers.html" class="nav-link">Subscribers</a><a href="settings.html" class="nav-link">Settings</a><button onclick="logout()" class="btn btn-outline">Logout</button></div></nav>
+<div style="max-width:1000px;margin:2rem auto;padding:1rem">
+<h1>Generate Activation Keys</h1>
+<div style="display:flex;gap:10px;margin:20px 0;flex-wrap:wrap;align-items:center">
+<input type="number" id="count" value="1" min="1" max="20" style="padding:10px;width:80px" placeholder="Count">
+<input type="number" id="duration" value="365" style="padding:10px;width:100px" placeholder="Days">
+<button class="btn btn-primary" onclick="generateKeys()">Generate Keys</button>
+</div>
+<div id="newKeys"></div>
+<div id="receiptArea"></div>
+<h2>All Keys</h2><div id="keyList"></div></div>
+<script>var t=localStorage.getItem("admin_token");if(!t)location.href="login.html";
+
+function generateKeys(){
+    var c=document.getElementById("count").value,d=document.getElementById("duration").value;
+    fetch("http://localhost:5000/api/admin/generate-key",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({count:parseInt(c),duration_days:parseInt(d)})})
+    .then(r=>r.json()).then(data=>{
+        var h="<h3 style='color:green'>Generated Keys (Click Copy or Print):</h3>";
+        data.keys.forEach(function(k,i){
+            h+="<div class='key-box' id='keyBox"+i+"'><div><b>Key:</b> <span id='keyText"+i+"'>"+k.key+"</span><br><b>Password:</b> <span id='passText"+i+"'>"+k.password+"</span></div><div style='display:flex;gap:5px'><button class='copy-btn' onclick='copyKey("+i+")'>Copy</button><button class='print-btn' onclick='printReceipt("+i+",\""+k.key+"\",\""+k.password+"\")'>Print Receipt</button></div></div>";
+        });
+        document.getElementById("newKeys").innerHTML=h;loadKeys();
+    });
+}
+
+function copyKey(i){
+    var key=document.getElementById("keyText"+i).textContent;
+    var pass=document.getElementById("passText"+i).textContent;
+    var text="Activation Key: "+key+"\nPassword: "+pass+"\n\nPlan: Premium (1 Year)\nSupport: safarisoftwares@gmail.com";
+    navigator.clipboard.writeText(text).then(function(){
+        alert("Copied to clipboard!\n\n"+text);
+    });
+}
+
+function printReceipt(i,key,pass){
+    var today=new Date().toLocaleDateString();
+    var receipt='<div class="receipt" id="receipt'+i+'"><h3>EPRA Exam Prep - Premium Activation</h3><div class="detail"><span>Date:</span><span>'+today+'</span></div><div class="detail"><span>Plan:</span><span>Premium (1 Year)</span></div><div class="detail"><span>Amount:</span><span>KES 2,500</span></div><div class="detail"><span>Key:</span><span><b>'+key+'</b></span></div><div class="detail"><span>Password:</span><span><b>'+pass+'</b></span></div><p style="text-align:center;margin-top:15px">Safari Softwares<br>safarisoftwares@gmail.com<br>WhatsApp: 0112168732</p></div>';
+    document.getElementById("receiptArea").innerHTML=receipt;
+    setTimeout(function(){window.print()},500);
+}
+
+function loadKeys(){
+    fetch("http://localhost:5000/api/admin/keys",{headers:{"Authorization":"Bearer "+t}}).then(r=>r.json()).then(d=>{
+        var h="<table style='width:100%'><tr><th>Key</th><th>Status</th><th>Created</th></tr>";
+        d.forEach(function(k){h+="<tr><td>"+k.key+"</td><td style='color:"+(k.is_used?"#f44336":"#4caf50")+"'>"+(k.is_used?"Used":"Available")+"</td><td>"+k.created_at+"</td></tr>"});
+        h+="</table>";document.getElementById("keyList").innerHTML=h;
+    });
+}
+loadKeys();
+function logout(){localStorage.removeItem("admin_token");location.href="login.html"}
+</script></body></html>

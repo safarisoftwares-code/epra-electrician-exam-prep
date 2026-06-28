@@ -1,0 +1,56 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payments - Admin</title><link rel="stylesheet" href="../../css/style.css">
+<style>
+.receipt{background:#fff;padding:20px;border:2px dashed #ccc;max-width:400px;margin:10px 0;display:none}
+.receipt h3{color:#1a237e;text-align:center}
+.receipt .detail{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dotted #ccc}
+@media print{body *{visibility:hidden}.receipt,.receipt *{visibility:visible}.receipt{position:absolute;left:0;top:0;width:100%}}
+</style></head>
+<body><nav class="navbar"><h2>Payments</h2><div><a href="dashboard.html" class="nav-link">Dashboard</a><a href="keys.html" class="nav-link">Keys</a><a href="payments.html" class="nav-link">Payments</a><a href="subscribers.html" class="nav-link">Subscribers</a><a href="settings.html" class="nav-link">Settings</a><button onclick="logout()" class="btn btn-outline">Logout</button></div></nav>
+<div style="max-width:1000px;margin:2rem auto;padding:1rem"><h1>Payment Verification</h1>
+<div style="margin:15px 0">
+<button class="btn" style="background:#1976d2;color:#fff;margin-right:5px" onclick="filterPayments('all')">All</button>
+<button class="btn" style="background:#ff9800;color:#fff;margin-right:5px" onclick="filterPayments('pending')">Pending</button>
+<button class="btn" style="background:#4caf50;color:#fff" onclick="filterPayments('verified')">Verified</button>
+</div>
+<div id="receiptArea"></div>
+<div id="payments"></div></div>
+<script>var t=localStorage.getItem("admin_token");if(!t)location.href="login.html";
+
+function loadPayments(s){s=s||"all";
+fetch("http://localhost:5000/api/admin/payments?status="+s,{headers:{"Authorization":"Bearer "+t}}).then(r=>r.json()).then(d=>{
+    var h="<table style='width:100%;background:#fff;border-radius:10px;padding:20px'><tr><th>ID</th><th>Amount</th><th>Phone</th><th>Status</th><th>Action</th></tr>";
+    d.forEach(function(p){
+        h+="<tr><td>"+p.id+"</td><td>KES "+p.amount+"</td><td>"+p.phone+"</td><td>"+p.status+"</td><td>"+
+        (p.status==="pending"?
+        "<button class='btn btn-primary' style='margin-right:5px' onclick=verify("+p.id+")>Verify & Generate Key</button>":
+        "<span style='color:#4caf50'>Verified</span> <button class='btn' style='background:#ff9800;color:#fff;padding:5px 10px;font-size:0.8rem' onclick=printVerificationReceipt("+p.id+",'"+p.phone+"')>Print Receipt</button>")+
+        "</td></tr>";
+    });
+    h+="</table>";document.getElementById("payments").innerHTML=h;
+})}
+
+function verify(id){
+    if(confirm("Verify this payment and generate activation key?")){
+        fetch("http://localhost:5000/api/admin/verify-payment",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({payment_id:id})})
+        .then(r=>r.json()).then(d=>{
+            var today=new Date().toLocaleDateString();
+            var receipt='<div class="receipt" id="receiptPrint"><h3>EPRA Exam Prep - Premium Activation</h3><div class="detail"><span>Date:</span><span>'+today+'</span></div><div class="detail"><span>Plan:</span><span>Premium (1 Year)</span></div><div class="detail"><span>Amount:</span><span>KES 2,500</span></div><div class="detail"><span>Key:</span><span><b>'+d.activation_key+'</b></span></div><div class="detail"><span>Password:</span><span><b>'+d.password+'</b></span></div><p style="text-align:center;margin-top:15px">Safari Softwares<br>safarisoftwares@gmail.com<br>WhatsApp: 0112168732</p></div>';
+            document.getElementById("receiptArea").innerHTML=receipt;
+            alert("Verified!\n\nKey: "+d.activation_key+"\nPassword: "+d.password+"\n\nClick OK to print receipt for customer.");
+            setTimeout(function(){window.print()},500);
+            loadPayments();
+        })
+    }
+}
+
+function printVerificationReceipt(id,phone){
+    var today=new Date().toLocaleDateString();
+    var receipt='<div class="receipt" id="receiptPrint"><h3>EPRA Exam Prep - Payment Receipt</h3><div class="detail"><span>Date:</span><span>'+today+'</span></div><div class="detail"><span>Payment ID:</span><span>#'+id+'</span></div><div class="detail"><span>Phone:</span><span>'+phone+'</span></div><div class="detail"><span>Amount:</span><span>KES 2,500</span></div><div class="detail"><span>Status:</span><span style="color:#4caf50">Verified</span></div><p style="text-align:center;margin-top:15px">Safari Softwares<br>safarisoftwares@gmail.com</p></div>';
+    document.getElementById("receiptArea").innerHTML=receipt;
+    setTimeout(function(){window.print()},500);
+}
+
+function filterPayments(s){loadPayments(s)}
+loadPayments();
+function logout(){localStorage.removeItem("admin_token");location.href="login.html"}
+</script></body></html>

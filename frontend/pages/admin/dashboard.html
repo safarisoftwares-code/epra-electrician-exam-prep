@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - EPRA</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h2>Dashboard</h2>
+        <div>
+            <a href="exam.html" class="btn btn-primary">Take Exam</a>
+            <a href="study.html" class="btn btn-outline">Study</a>
+            <a href="upgrade.html" class="btn btn-outline" style="color:#ff9800;border-color:#ff9800">Upgrade</a>
+            <button onclick="logout()" class="btn btn-outline">Logout</button>
+        </div>
+    </nav>
+    <div style="max-width:800px;margin:2rem auto;padding:1rem">
+        <h1 style="color:#1a237e">Welcome, <span id="name">Electrician</span>!</h1>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-top:2rem">
+            <div class="feature-card" onclick="location.href='exam.html'" style="cursor:pointer">
+                <h3>Start Exam</h3><p>10 Questions - Timed</p>
+            </div>
+            <div class="feature-card" onclick="location.href='study.html'" style="cursor:pointer">
+                <h3>Study Mode</h3><p>Learn with answers</p>
+            </div>
+        </div>
+        <div id="stats" style="margin-top:2rem"></div>
+    </div>
+    <script src="../js/app.js"></script>
+    <script>
+        const t=localStorage.getItem("access_token");
+        if(!t)location.href="login.html";
+        fetch("http://localhost:5000/api/progress/dashboard",{
+            headers:{"Authorization":"Bearer "+t}
+        }).then(r=>r.json()).then(d=>{
+            document.getElementById("name").textContent=d.user.full_name;
+            document.getElementById("stats").innerHTML="<h3>Your Stats</h3><p>Exams Taken: "+d.overall_stats.total_exams+" | Passed: "+d.overall_stats.passed_exams+" | Last Score: "+(d.overall_stats.last_score||0)+"%</p>";
+        }).catch(()=>{});
+    </script>
+</body>
+</html>
