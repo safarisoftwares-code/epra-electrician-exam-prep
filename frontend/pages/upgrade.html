@@ -34,8 +34,9 @@
             color: #f44336;
             font-size: 1.2rem;
         }
-        .highlight-row {
-            background: #fff8e1;
+        .disabled-form {
+            opacity: 0.6;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -75,7 +76,12 @@
                         <tr>
                             <td style="text-align: left;"><strong>Practice Questions</strong></td>
                             <td><span class="cross-icon">✗</span> 5 Questions</td>
-                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> 100+ Questions</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> 40 Questions (EPRA Realistic)</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;"><strong>Practical Scenarios</strong></td>
+                            <td><span class="cross-icon">✗</span> 2 Scenarios</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> 8 Scenarios (EPRA Realistic)</td>
                         </tr>
                         <tr>
                             <td style="text-align: left;"><strong>Exam Attempts</strong></td>
@@ -117,11 +123,6 @@
                             <td><span class="check-icon">✓</span> 5 Questions</td>
                             <td style="background: #fff8e1;"><span class="check-icon">✓</span> Full Access</td>
                         </tr>
-                        <tr>
-                            <td style="text-align: left;"><strong>Exam History</strong></td>
-                            <td><span class="check-icon">✓</span> Basic</td>
-                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> Full History & Review</td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -134,14 +135,14 @@
             <p style="color: #666;">One-time payment for 365 days of full access</p>
             
             <ul class="benefits-list">
-                <li>✓ 100+ EPRA Exam Questions</li>
+                <li>✓ 40 Theory Questions (EPRA-realistic exam)</li>
+                <li>✓ 8 Practical Scenarios</li>
                 <li>✓ Unlimited Exam Attempts</li>
                 <li>✓ Full Marking Schemes with Explanations</li>
                 <li>✓ Detailed BS 7671 & EPRA References</li>
                 <li>✓ Expert Practical Tips</li>
                 <li>✓ All Certification Classes (C, B, A)</li>
                 <li>✓ Advanced Progress Analytics</li>
-                <li>✓ Priority Email Support</li>
             </ul>
         </div>
 
@@ -156,6 +157,11 @@
             <p style="color: #666; margin-bottom: 1rem;">
                 Already purchased a key? Enter it below to activate your premium access immediately.
             </p>
+            
+            <div id="activateLoginMsg" style="display: none; text-align: center; padding: 15px; background: #e3f2fd; border-radius: 8px; margin-bottom: 15px;">
+                <a href="login.html" style="color: #1a237e; font-weight: 600;">🔐 Login</a> or 
+                <a href="register.html" style="color: #ff9800; font-weight: 600;">📝 Register</a> to activate premium
+            </div>
             
             <form id="activateForm">
                 <div class="form-group">
@@ -188,13 +194,19 @@
                 <h4 style="color: #2e7d32; margin-bottom: 15px;">📱 How to Pay:</h4>
                 <ol style="line-height: 2; margin-left: 20px; color: #333;">
                     <li>Go to <strong>M-Pesa</strong> on your phone</li>
-                    <li>Select <strong>Lipa na M-Pesa</strong> → <strong>Paybill & Services</strong></li>
-                    <li>Enter Paybill: <strong style="color: #1a237e; font-size: 1.1rem;">516600</strong><br>Account: <strong style="color: #ff9800; font-size: 1.1rem;">528591</strong></li>
+                    <li>Select <strong>Lipa na M-Pesa</strong> → <strong>Paybill</strong></li>
+                    <li>Enter Paybill: <strong style="color: #1a237e; font-size: 1.1rem;">516600</strong></li>
+                    <li>Enter Account: <strong style="color: #ff9800; font-size: 1.1rem;">528591</strong></li>
                     <li>Enter Amount: <strong style="color: #ff9800; font-size: 1.1rem;">KES 2,500</strong></li>
                     <li>Enter your M-Pesa PIN and confirm</li>
                     <li>You'll receive a confirmation SMS with a transaction ID</li>
                     <li>Enter the transaction ID below to verify your payment</li>
                 </ol>
+            </div>
+            
+            <div id="paymentLoginMsg" style="display: none; text-align: center; padding: 15px; background: #e3f2fd; border-radius: 8px; margin-bottom: 15px;">
+                <a href="login.html" style="color: #1a237e; font-weight: 600;">🔐 Login</a> or 
+                <a href="register.html" style="color: #ff9800; font-weight: 600;">📝 Register</a> to submit payment
             </div>
             
             <form id="paymentForm">
@@ -215,7 +227,8 @@
                 </button>
                 
                 <p style="text-align: center; margin-top: 10px; color: #666; font-size: 0.9rem;">
-                    Your activation key and password will be sent within 24 hours via email or WhatsApp
+                    Activation key and password sent within 24 hours via<br>
+                    ✉️ safarisoftwares@gmail.com | 💬 WhatsApp: +254112168732
                 </p>
             </form>
         </div>
@@ -228,66 +241,78 @@
                 <a href="mailto:safarisoftwares@gmail.com" style="color: #1a237e; font-weight: 600;">
                     safarisoftwares@gmail.com
                 </a>
+                | 💬 <a href="https://wa.me/254112168732" style="color: #4caf50; font-weight: 600;">WhatsApp</a>
             </p>
         </div>
     </div>
 
     <script src="../js/app.js"></script>
     <script>
-        // Check authentication - but allow viewing the page without login
-        const isLoggedIn = EPRA.requireAuth('student');
+        // CHECK LOGIN STATUS WITHOUT REDIRECTING
+        const isLoggedIn = !!EPRA.getToken('student');
         
-        // Load premium status if logged in
+        // Load premium status
         async function loadStatus() {
+            const statusDiv = document.getElementById('currentStatus');
+            
+            // If NOT logged in - show the page freely with login prompts
             if (!isLoggedIn) {
-                document.getElementById('currentStatus').innerHTML = `
-                    <div class="alert alert-info">
+                statusDiv.innerHTML = `
+                    <div class="alert alert-info" style="text-align: center;">
                         <i class="fas fa-info-circle"></i> 
-                        <strong>Please <a href="login.html" style="color: #1a237e;">login</a> to activate premium or submit payment.</strong>
+                        <strong>Viewing pricing & benefits.</strong><br>
+                        <a href="login.html" style="color: #1a237e; font-weight: 600;">🔐 Login</a> or 
+                        <a href="register.html" style="color: #ff9800; font-weight: 600;">📝 Register</a> to activate premium.
                     </div>
                 `;
-                // Disable forms
-                document.getElementById('activateForm').style.opacity = '0.5';
-                document.getElementById('paymentForm').style.opacity = '0.5';
-                document.getElementById('activateForm').querySelectorAll('input, button').forEach(el => el.disabled = true);
-                document.getElementById('paymentForm').querySelectorAll('input, button').forEach(el => el.disabled = true);
+                // Show login prompts for forms
+                document.getElementById('activateLoginMsg').style.display = 'block';
+                document.getElementById('paymentLoginMsg').style.display = 'block';
+                // Disable form inputs gently
+                document.getElementById('activateForm').classList.add('disabled-form');
+                document.getElementById('paymentForm').classList.add('disabled-form');
                 return;
             }
             
+            // User IS logged in - check premium status
             try {
                 const data = await EPRA.apiRequest('/premium/status', 'GET', null, 'student');
-                const statusDiv = document.getElementById('currentStatus');
                 
                 if (data.is_premium) {
                     statusDiv.innerHTML = `
                         <div class="alert alert-success">
                             <i class="fas fa-crown"></i> 
                             <strong>Premium Active!</strong> 
-                            Your premium access expires on ${EPRA.formatDate(data.expires)} 
+                            Expires: ${EPRA.formatDate(data.expires)} 
                             (${data.days_remaining} days remaining)
                         </div>
                     `;
-                    // Disable forms if already premium
-                    document.getElementById('activateForm').style.opacity = '0.5';
-                    document.getElementById('paymentForm').style.opacity = '0.5';
-                    document.getElementById('activateForm').querySelectorAll('input, button').forEach(el => el.disabled = true);
-                    document.getElementById('paymentForm').querySelectorAll('input, button').forEach(el => el.disabled = true);
+                    // Disable forms - already premium
+                    document.getElementById('activateForm').classList.add('disabled-form');
+                    document.getElementById('paymentForm').classList.add('disabled-form');
                 } else {
                     statusDiv.innerHTML = `
                         <div class="alert alert-warning">
                             <i class="fas fa-info-circle"></i> 
-                            You're on the <strong>Free Plan</strong>. Upgrade now for full access!
+                            You're on the <strong>Free Plan</strong>. Upgrade now!
                         </div>
                     `;
+                    // Forms are active - ready to use
                 }
             } catch (error) {
-                console.error('Failed to load status:', error);
+                console.error('Status check failed:', error);
             }
         }
 
         // Activate with key
         document.getElementById('activateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Require login to activate
+            if (!isLoggedIn) {
+                window.location.href = 'login.html';
+                return;
+            }
             
             const key = document.getElementById('activationKey').value.trim();
             const password = document.getElementById('activationPassword').value.trim();
@@ -307,7 +332,7 @@
                     password: password
                 }, 'student');
                 
-                EPRA.showMessage('✅ Premium activated successfully! Redirecting...', 'success', 'message-container');
+                EPRA.showMessage('✅ Premium activated! Redirecting...', 'success', 'message-container');
                 
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
@@ -323,6 +348,12 @@
         // Submit payment
         document.getElementById('paymentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Require login to submit payment
+            if (!isLoggedIn) {
+                window.location.href = 'login.html';
+                return;
+            }
             
             const transactionId = document.getElementById('transactionId').value.trim();
             const phone = document.getElementById('phoneNumber').value.trim();
@@ -345,7 +376,7 @@
                 }, 'student');
                 
                 EPRA.showMessage(
-                    '✅ Payment submitted successfully! You will receive your activation key after verification (usually within 1 hour). Check your email or contact support.', 
+                    '✅ Payment submitted! Key sent within 24 hours via email/WhatsApp.', 
                     'success', 
                     'message-container'
                 );
