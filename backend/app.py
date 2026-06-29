@@ -437,7 +437,7 @@ def clear_exam_history():
 @app.route('/api/study/questions', methods=['GET'])
 @jwt_required()
 def get_study_questions():
-    """Get questions for study mode (with answers)"""
+    """Get questions for study mode (with answers) - supports type filtering"""
     try:
         identity = get_jwt_identity()
         if not identity.startswith('user_'):
@@ -446,15 +446,27 @@ def get_study_questions():
         user_id = int(identity.replace('user_', ''))
         premium = is_premium_user(user_id)
         
+        # Get study type from query parameter
+        study_type = request.args.get('type', 'mixed')
+        
         limit = 100 if premium else 5
         
-        questions = Question.query.filter_by(is_active=True)\
-            .order_by(db.func.random()).limit(limit).all()
+        # Build query based on study type
+        query = Question.query.filter_by(is_active=True)
+        
+        if study_type == 'theory':
+            query = query.filter(~Question.question_text.like('PRACTICAL:%'))
+        elif study_type == 'practical':
+            query = query.filter(Question.question_text.like('PRACTICAL:%'))
+        # 'mixed' returns all questions
+        
+        questions = query.order_by(db.func.random()).limit(limit).all()
         
         return jsonify({
             'questions': [q.to_dict(include_answer=True) for q in questions],
             'total': len(questions),
-            'is_premium': premium
+            'is_premium': premium,
+            'study_type': study_type
         }), 200
         
     except Exception as e:

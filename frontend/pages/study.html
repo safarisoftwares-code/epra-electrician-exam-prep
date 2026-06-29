@@ -6,6 +6,41 @@
     <title>Study Mode - EPRA Exam Prep</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .type-card {
+            cursor: pointer;
+            max-width: 250px;
+            border: 3px solid #ddd;
+            transition: all 0.3s;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        .type-card.selected {
+            border-color: #ff9800 !important;
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(255,152,0,0.3);
+        }
+        .option-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .option-item.correct-highlight {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            font-weight: 600;
+        }
+        .option-item.user-selected-study {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -21,38 +56,79 @@
     </nav>
 
     <div class="exam-container">
-        <div id="premiumBanner" style="margin-bottom: 1rem;"></div>
-        
-        <div class="exam-header">
-            <div>
-                <span style="color: #666;">Question</span>
-                <span id="currentQuestionNum" style="font-weight: bold; color: #1a237e;">1</span>
-                <span style="color: #666;">/</span>
-                <span id="totalQuestions" style="color: #666;">0</span>
+        <!-- Study Start Screen -->
+        <div id="startScreen" class="card" style="text-align: center;">
+            <h2 style="color: #1a237e; margin-bottom: 1rem;">Study Mode</h2>
+            <p style="color: #666; margin-bottom: 1.5rem;">
+                Choose your study topic below. Answers and explanations are shown immediately.<br>
+                <strong>Theory</strong> covers regulations & calculations. <strong>Practical</strong> covers real-world scenarios.
+            </p>
+            
+            <!-- Study Type Selection -->
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                <div id="theoryCard" class="type-card" onclick="selectStudyType('theory')">
+                    <div style="font-size: 2.5rem;">📝</div>
+                    <h3 style="color: #1a237e;">Theory</h3>
+                    <p style="font-size: 0.85rem; color: #666;">Regulations, calculations, standards</p>
+                    <span style="background: #e3f2fd; color: #1565c0; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">100 Questions</span>
+                </div>
+                
+                <div id="practicalCard" class="type-card" onclick="selectStudyType('practical')">
+                    <div style="font-size: 2.5rem;">🔧</div>
+                    <h3 style="color: #1a237e;">Practical</h3>
+                    <p style="font-size: 0.85rem; color: #666;">Real-world scenarios & field problems</p>
+                    <span style="background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">60 Scenarios</span>
+                </div>
+                
+                <div id="mixedCard" class="type-card" onclick="selectStudyType('mixed')">
+                    <div style="font-size: 2.5rem;">🎯</div>
+                    <h3 style="color: #1a237e;">Mixed</h3>
+                    <p style="font-size: 0.85rem; color: #666;">Both theory & practical combined</p>
+                    <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">160 Questions</span>
+                </div>
             </div>
-            <button onclick="loadNewQuestions()" class="btn btn-outline" style="color:#1a237e;border-color:#1a237e;">
-                <i class="fas fa-sync-alt"></i> New Questions
+            
+            <div id="premiumBanner" style="margin-bottom: 1.5rem;"></div>
+            
+            <button id="startStudyBtn" onclick="loadStudyQuestions()" class="btn btn-primary btn-large" disabled style="opacity: 0.5;">
+                <i class="fas fa-hand-pointer"></i> Select Study Type First
             </button>
         </div>
 
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
-        </div>
+        <!-- Active Study Screen -->
+        <div id="studyScreen" style="display: none;">
+            <div class="exam-header">
+                <div>
+                    <span style="color: #666;">Question</span>
+                    <span id="currentQuestionNum" style="font-weight: bold; color: #1a237e;">1</span>
+                    <span style="color: #666;">/</span>
+                    <span id="totalQuestions" style="color: #666;">0</span>
+                    <span id="studyTypeLabel" style="margin-left: 10px; font-size: 0.85rem; color: #ff9800;"></span>
+                </div>
+                <button onclick="loadStudyQuestions()" class="btn btn-outline" style="color:#1a237e;border-color:#1a237e;">
+                    <i class="fas fa-sync-alt"></i> New Questions
+                </button>
+            </div>
 
-        <div class="question-box" id="questionBox">
-            <p style="text-align: center; color: #999;">Loading questions...</p>
-        </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+            </div>
 
-        <div class="exam-actions">
-            <button id="prevBtn" onclick="previousQuestion()" class="btn btn-outline" style="color:#1a237e;border-color:#1a237e;">
-                ← Previous
-            </button>
-            <button id="showAnswerBtn" onclick="revealAnswer()" class="btn btn-primary">
-                <i class="fas fa-lightbulb"></i> Show Answer
-            </button>
-            <button id="nextBtn" onclick="nextQuestion()" class="btn btn-primary">
-                Next →
-            </button>
+            <div class="question-box" id="questionBox">
+                <p style="text-align: center; color: #999;">Loading questions...</p>
+            </div>
+
+            <div class="exam-actions">
+                <button id="prevBtn" onclick="previousQuestion()" class="btn btn-outline" style="color:#1a237e;border-color:#1a237e;">
+                    ← Previous
+                </button>
+                <button id="showAnswerBtn" onclick="revealAnswer()" class="btn btn-primary">
+                    <i class="fas fa-lightbulb"></i> Show Answer
+                </button>
+                <button id="nextBtn" onclick="nextQuestion()" class="btn btn-primary">
+                    Next →
+                </button>
+            </div>
         </div>
     </div>
 
@@ -67,38 +143,84 @@
         let questions = [];
         let currentIndex = 0;
         let answerRevealed = false;
+        let selectedStudyType = null;
+
+        // Check premium status
+        async function checkPremiumStatus() {
+            try {
+                const data = await EPRA.apiRequest('/premium/status', 'GET', null, 'student');
+                const bannerDiv = document.getElementById('premiumBanner');
+                
+                if (data.is_premium) {
+                    bannerDiv.innerHTML = '<span class="premium-badge">Premium Study - All questions unlocked</span>';
+                } else {
+                    bannerDiv.innerHTML = '<span class="free-badge">Free Study - 5 Questions</span> ' +
+                        '<a href="upgrade.html" style="color:#ff9800;">Upgrade for unlimited access</a>';
+                }
+            } catch (error) {
+                console.error('Failed to check premium status:', error);
+            }
+        }
+
+        // Select study type
+        function selectStudyType(type) {
+            selectedStudyType = type;
+            
+            // Reset all cards
+            document.getElementById('theoryCard').classList.remove('selected');
+            document.getElementById('practicalCard').classList.remove('selected');
+            document.getElementById('mixedCard').classList.remove('selected');
+            
+            // Highlight selected
+            const cardMap = { theory: 'theoryCard', practical: 'practicalCard', mixed: 'mixedCard' };
+            document.getElementById(cardMap[type]).classList.add('selected');
+            
+            // Enable start button
+            const startBtn = document.getElementById('startStudyBtn');
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            
+            const typeLabels = { theory: '📝 Theory', practical: '🔧 Practical', mixed: '🎯 Mixed' };
+            startBtn.innerHTML = `<i class="fas fa-book"></i> Study ${typeLabels[type]}`;
+        }
 
         async function loadStudyQuestions() {
+            if (!selectedStudyType) {
+                alert('Please select a study type first');
+                return;
+            }
+            
             try {
-                const data = await EPRA.apiRequest('/study/questions', 'GET', null, 'student');
+                const startBtn = document.getElementById('startStudyBtn');
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+                const data = await EPRA.apiRequest(`/study/questions?type=${selectedStudyType}`, 'GET', null, 'student');
                 questions = data.questions;
                 currentIndex = 0;
                 answerRevealed = false;
                 
                 document.getElementById('totalQuestions').textContent = questions.length;
                 
-                // Premium banner
-                const bannerDiv = document.getElementById('premiumBanner');
-                if (data.is_premium) {
-                    bannerDiv.innerHTML = '<div class="alert alert-success">' +
-                        '<i class="fas fa-crown"></i> Premium Study Mode - All questions unlocked' +
-                        '</div>';
-                } else {
-                    bannerDiv.innerHTML = '<div class="alert alert-warning">' +
-                        '<i class="fas fa-info-circle"></i> Free Study Mode - 5 questions. ' +
-                        '<a href="upgrade.html" style="color:#ff9800;">Upgrade for unlimited access</a>' +
-                        '</div>';
-                }
+                const typeLabels = { theory: '📝 Theory', practical: '🔧 Practical', mixed: '🎯 Mixed' };
+                document.getElementById('studyTypeLabel').textContent = typeLabels[selectedStudyType] || '';
+                
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('studyScreen').style.display = 'block';
                 
                 if (questions.length > 0) {
                     loadQuestion();
                 } else {
                     document.getElementById('questionBox').innerHTML = 
-                        '<p style="text-align:center;color:#999;">No questions available</p>';
+                        '<p style="text-align:center;color:#999;">No questions available for this type</p>';
                 }
                 
             } catch (error) {
                 EPRA.showMessage('Failed to load questions: ' + error.message, 'error', 'message-container');
+                const startBtn = document.getElementById('startStudyBtn');
+                startBtn.disabled = false;
+                const typeLabels = { theory: '📝 Theory', practical: '🔧 Practical', mixed: '🎯 Mixed' };
+                startBtn.innerHTML = `<i class="fas fa-book"></i> Study ${typeLabels[selectedStudyType]}`;
             }
         }
 
@@ -112,7 +234,6 @@
             
             document.getElementById('currentQuestionNum').textContent = currentIndex + 1;
             
-            // Update progress
             const progress = ((currentIndex + 1) / questions.length) * 100;
             document.getElementById('progressFill').style.width = progress + '%';
             
@@ -120,24 +241,36 @@
             questionBox.innerHTML = `
                 <div class="question-number">Category: ${question.category} | Difficulty: ${question.difficulty}</div>
                 <div class="question-text">${question.question_text}</div>
-                <div class="options-list">
-                    ${question.options.map(option => `
-                        <div class="option" onclick="this.classList.toggle('selected')">${option}</div>
+                <div class="options-list" id="studyOptions">
+                    ${question.options.map((option, i) => `
+                        <div class="option-item" id="opt-${i}" onclick="toggleStudyOption(${i})">${option}</div>
                     `).join('')}
                 </div>
                 <div id="answerReveal" style="display: none;">
                     <div class="explanation-box">
-                        <h4>✓ Correct Answer: ${question.correct_answer}</h4>
-                        ${question.explanation ? `<p><strong>Explanation:</strong> ${question.explanation}</p>` : ''}
-                        ${question.regulation_reference ? `<p><strong>Regulation:</strong> ${question.regulation_reference}</p>` : ''}
+                        <h4>✓ Correct Answer: <span style="color: #4caf50;">${question.correct_answer}</span></h4>
+                        ${question.explanation ? `<p><strong>📖 Explanation:</strong> ${question.explanation}</p>` : ''}
+                        ${question.regulation_reference ? `<p><strong>📋 Regulation:</strong> ${question.regulation_reference}</p>` : ''}
                         ${question.practical_tip ? `<p><strong>💡 Practical Tip:</strong> ${question.practical_tip}</p>` : ''}
-                        ${question.calculation_steps ? `<p><strong>📐 Calculation:</strong></p><pre>${question.calculation_steps}</pre>` : ''}
+                        ${question.calculation_steps ? `<p><strong>📐 Calculation Steps:</strong></p><pre style="background:#fff;padding:10px;border-radius:5px;">${question.calculation_steps}</pre>` : ''}
                     </div>
                 </div>
             `;
             
-            document.getElementById('showAnswerBtn').textContent = '💡 Show Answer';
+            document.getElementById('showAnswerBtn').innerHTML = '<i class="fas fa-lightbulb"></i> Show Answer';
             document.getElementById('prevBtn').style.display = currentIndex === 0 ? 'none' : 'inline-block';
+        }
+
+        function toggleStudyOption(index) {
+            // Allow user to select/deselect options for practice
+            const opt = document.getElementById('opt-' + index);
+            if (opt.classList.contains('user-selected-study')) {
+                opt.classList.remove('user-selected-study');
+            } else {
+                // Clear all selections first
+                document.querySelectorAll('.option-item').forEach(el => el.classList.remove('user-selected-study'));
+                opt.classList.add('user-selected-study');
+            }
         }
 
         function revealAnswer() {
@@ -145,14 +278,14 @@
             if (answerDiv) {
                 answerDiv.style.display = 'block';
                 answerRevealed = true;
-                document.getElementById('showAnswerBtn').textContent = '✓ Answer Shown';
+                document.getElementById('showAnswerBtn').innerHTML = '<i class="fas fa-check-circle"></i> Answer Shown';
                 
                 // Highlight correct answer
                 const question = questions[currentIndex];
-                const options = document.querySelectorAll('.option');
-                options.forEach(option => {
-                    if (option.textContent === question.correct_answer) {
-                        option.classList.add('correct');
+                const options = document.querySelectorAll('.option-item');
+                options.forEach((opt, i) => {
+                    if (question.options[i] === question.correct_answer) {
+                        opt.classList.add('correct-highlight');
                     }
                 });
             }
@@ -172,12 +305,8 @@
             }
         }
 
-        function loadNewQuestions() {
-            loadStudyQuestions();
-        }
-
         // Initialize
-        loadStudyQuestions();
+        checkPremiumStatus();
     </script>
 </body>
 </html>
