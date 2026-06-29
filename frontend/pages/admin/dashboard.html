@@ -1,42 +1,753 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard - EPRA</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - EPRA Exam Prep</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .key-card {
+            background: #e8f5e9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .filter-buttons button {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .filter-buttons button.active {
+            background: #1a237e;
+            color: white;
+            border-color: #1a237e;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .badge-warning {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        .badge-danger {
+            background: #ffebee;
+            color: #c62828;
+        }
+    </style>
 </head>
-<body>
-    <nav class="navbar">
-        <h2>Dashboard</h2>
-        <div>
-            <a href="exam.html" class="btn btn-primary">Take Exam</a>
-            <a href="study.html" class="btn btn-outline">Study</a>
-            <a href="upgrade.html" class="btn btn-outline" style="color:#ff9800;border-color:#ff9800">Upgrade</a>
-            <button onclick="logout()" class="btn btn-outline">Logout</button>
-        </div>
-    </nav>
-    <div style="max-width:800px;margin:2rem auto;padding:1rem">
-        <h1 style="color:#1a237e">Welcome, <span id="name">Electrician</span>!</h1>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-top:2rem">
-            <div class="feature-card" onclick="location.href='exam.html'" style="cursor:pointer">
-                <h3>Start Exam</h3><p>10 Questions - Timed</p>
-            </div>
-            <div class="feature-card" onclick="location.href='study.html'" style="cursor:pointer">
-                <h3>Study Mode</h3><p>Learn with answers</p>
-            </div>
-        </div>
-        <div id="stats" style="margin-top:2rem"></div>
+<body class="admin-layout">
+    <!-- Admin Sidebar -->
+    <div class="admin-sidebar">
+        <h3>⚡ Admin Panel</h3>
+        <ul class="sidebar-menu">
+            <li><a class="active" onclick="switchTab('dashboard')">
+                <i class="fas fa-chart-bar"></i> Dashboard
+            </a></li>
+            <li><a onclick="switchTab('keys')">
+                <i class="fas fa-key"></i> Activation Keys
+            </a></li>
+            <li><a onclick="switchTab('payments')">
+                <i class="fas fa-money-bill"></i> Payments
+            </a></li>
+            <li><a onclick="switchTab('subscribers')">
+                <i class="fas fa-users"></i> Subscribers
+            </a></li>
+            <li><a onclick="switchTab('users')">
+                <i class="fas fa-user-graduate"></i> Students
+            </a></li>
+            <li><a onclick="switchTab('settings')">
+                <i class="fas fa-cog"></i> Settings
+            </a></li>
+            <li><a onclick="adminLogout()" style="background: #f44336; margin-top: 20px;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a></li>
+        </ul>
     </div>
-    <script src="../js/app.js"></script>
+
+    <!-- Main Content Area -->
+    <div class="admin-main">
+        <!-- Dashboard Tab -->
+        <div id="tab-dashboard" class="admin-tab active">
+            <h1 style="color: #1a237e; margin-bottom: 20px;">📊 Admin Dashboard</h1>
+            
+            <div class="stat-grid" id="dashboardStats">
+                <div class="stat-card">
+                    <h2 id="stat-users">0</h2>
+                    <p>Total Students</p>
+                </div>
+                <div class="stat-card">
+                    <h2 id="stat-premium">0</h2>
+                    <p>Premium Users</p>
+                </div>
+                <div class="stat-card">
+                    <h2 id="stat-pending">0</h2>
+                    <p>Pending Payments</p>
+                </div>
+                <div class="stat-card">
+                    <h2 id="stat-revenue">KES 0</h2>
+                    <p>Total Revenue</p>
+                </div>
+                <div class="stat-card">
+                    <h2 id="stat-keys">0</h2>
+                    <p>Available Keys</p>
+                </div>
+                <div class="stat-card">
+                    <h2 id="stat-exams">0</h2>
+                    <p>Total Exams</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Recent Payments</h3>
+                </div>
+                <div id="recentPayments" style="overflow-x: auto;">
+                    <p style="text-align: center; color: #999;">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activation Keys Tab -->
+        <div id="tab-keys" class="admin-tab">
+            <h1 style="color: #1a237e; margin-bottom: 20px;">🔑 Activation Keys</h1>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Generate New Keys</h3>
+                </div>
+                <div style="display: flex; gap: 15px; align-items: end; flex-wrap: wrap;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Number of Keys</label>
+                        <input type="number" id="keyCount" class="form-control" value="1" min="1" max="100" style="width: 100px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Duration (Days)</label>
+                        <input type="number" id="keyDuration" class="form-control" value="365" min="1" style="width: 120px;">
+                    </div>
+                    <button onclick="generateKeys()" class="btn btn-primary">
+                        <i class="fas fa-magic"></i> Generate Keys
+                    </button>
+                </div>
+                <div id="generatedKeys" style="margin-top: 20px;"></div>
+                <div id="receiptArea"></div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <h3 class="card-title">All Keys</h3>
+                    <div class="filter-buttons">
+                        <button class="active" onclick="filterKeys('all')">All</button>
+                        <button onclick="filterKeys('available')">Available</button>
+                        <button onclick="filterKeys('used')">Used</button>
+                    </div>
+                </div>
+                <div id="keysList" style="overflow-x: auto;">
+                    <p style="text-align: center; color: #999;">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments Tab -->
+        <div id="tab-payments" class="admin-tab">
+            <h1 style="color: #1a237e; margin-bottom: 20px;">💳 Payments</h1>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Payment Records</h3>
+                    <div class="filter-buttons">
+                        <button class="active" onclick="filterPayments('all')">All</button>
+                        <button onclick="filterPayments('pending')">Pending</button>
+                        <button onclick="filterPayments('verified')">Verified</button>
+                    </div>
+                </div>
+                <div id="paymentsList" style="overflow-x: auto;">
+                    <p style="text-align: center; color: #999;">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscribers Tab -->
+        <div id="tab-subscribers" class="admin-tab">
+            <h1 style="color: #1a237e; margin-bottom: 20px;">👥 Premium Subscribers</h1>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Active Subscriptions</h3>
+                </div>
+                <div id="subscribersList" style="overflow-x: auto;">
+                    <p style="text-align: center; color: #999;">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="tab-users" class="admin-tab">
+            <h1 style="color: #1a237e; margin-bottom: 20px;">👨‍🎓 Students</h1>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Registered Students</h3>
+                </div>
+                <div id="usersList" style="overflow-x: auto;">
+                    <p style="text-align: center; color: #999;">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="tab-settings" class="admin-tab">
+            <h1 style="color: #1a237e; margin-bottom: 20px;">⚙️ Settings</h1>
+            
+            <div class="card" style="max-width: 500px;">
+                <div class="card-header">
+                    <h3 class="card-title">Change Password</h3>
+                </div>
+                <div id="settingsMessage"></div>
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" class="form-control" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" class="form-control" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-save"></i> Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/app.js"></script>
     <script>
-        const t=localStorage.getItem("access_token");
-        if(!t)location.href="login.html";
-        fetch("http://localhost:5000/api/progress/dashboard",{
-            headers:{"Authorization":"Bearer "+t}
-        }).then(r=>r.json()).then(d=>{
-            document.getElementById("name").textContent=d.user.full_name;
-            document.getElementById("stats").innerHTML="<h3>Your Stats</h3><p>Exams Taken: "+d.overall_stats.total_exams+" | Passed: "+d.overall_stats.passed_exams+" | Last Score: "+(d.overall_stats.last_score||0)+"%</p>";
-        }).catch(()=>{});
+        // Check admin authentication
+        if (!EPRA.requireAuth('admin')) {
+            window.location.href = 'login.html';
+        }
+
+        let currentFilter = 'all';
+        let currentKeyFilter = 'all';
+
+        // ==============================
+        // TAB NAVIGATION
+        // ==============================
+        function switchTab(tabName) {
+            // Update sidebar active state
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            event.target.closest('a').classList.add('active');
+            
+            // Show selected tab
+            document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            // Load tab data
+            switch(tabName) {
+                case 'dashboard': loadDashboard(); break;
+                case 'keys': loadKeys(); break;
+                case 'payments': loadPayments(); break;
+                case 'subscribers': loadSubscribers(); break;
+                case 'users': loadUsers(); break;
+            }
+        }
+
+        // ==============================
+        // DASHBOARD FUNCTIONS
+        // ==============================
+        async function loadDashboard() {
+            try {
+                const data = await EPRA.apiRequest('/admin/dashboard', 'GET', null, 'admin');
+                const stats = data.stats;
+                
+                document.getElementById('stat-users').textContent = stats.total_users;
+                document.getElementById('stat-premium').textContent = stats.premium_users;
+                document.getElementById('stat-pending').textContent = stats.pending_payments;
+                document.getElementById('stat-revenue').textContent = 'KES ' + (stats.total_revenue || 0).toLocaleString();
+                document.getElementById('stat-keys').textContent = stats.available_keys;
+                document.getElementById('stat-exams').textContent = stats.total_exams;
+                
+                // Display recent payments
+                const paymentsDiv = document.getElementById('recentPayments');
+                if (data.recent_payments && data.recent_payments.length > 0) {
+                    let html = `
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Amount</th>
+                                        <th>Phone</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    data.recent_payments.forEach(payment => {
+                        const statusBadge = payment.status === 'verified' ? 
+                            '<span class="badge badge-success">Verified</span>' :
+                            payment.status === 'pending' ? 
+                            '<span class="badge badge-warning">Pending</span>' :
+                            '<span class="badge badge-danger">Rejected</span>';
+                        
+                        html += `
+                            <tr>
+                                <td>#${payment.id}</td>
+                                <td>KES ${payment.amount}</td>
+                                <td>${payment.phone || 'N/A'}</td>
+                                <td>${statusBadge}</td>
+                                <td>${EPRA.formatDate(payment.created_at)}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += '</tbody></table></div>';
+                    paymentsDiv.innerHTML = html;
+                } else {
+                    paymentsDiv.innerHTML = '<p style="text-align:center;padding:2rem;color:#999;">No payments yet</p>';
+                }
+                
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+            }
+        }
+
+        // ==============================
+        // KEY MANAGEMENT FUNCTIONS
+        // ==============================
+        async function generateKeys() {
+            const count = parseInt(document.getElementById('keyCount').value) || 1;
+            const duration = parseInt(document.getElementById('keyDuration').value) || 365;
+            
+            if (count < 1 || count > 100) {
+                alert('Please enter between 1 and 100 keys');
+                return;
+            }
+            
+            try {
+                const data = await EPRA.apiRequest('/admin/keys/generate', 'POST', {
+                    count: count,
+                    duration_days: duration
+                }, 'admin');
+                
+                // Display generated keys
+                let html = '<h4 style="color: #4caf50; margin-bottom: 15px;">✅ Keys Generated Successfully</h4>';
+                data.keys.forEach((key, index) => {
+                    html += `
+                        <div class="key-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong>Key:</strong> <span style="font-family: monospace;">${key.key}</span><br>
+                                    <strong>Password:</strong> <span style="font-family: monospace;">${key.password}</span>
+                                </div>
+                                <div>
+                                    <button class="btn btn-small" style="background: #ff9800; color: white;" 
+                                            onclick="copyKey('${key.key}', '${key.password}')">
+                                        📋 Copy
+                                    </button>
+                                    <button class="btn btn-small btn-primary" 
+                                            onclick="printKey('${key.key}', '${key.password}')">
+                                        🖨️ Print
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('generatedKeys').innerHTML = html;
+                
+                // Reload keys list
+                loadKeys();
+                
+            } catch (error) {
+                alert('Error generating keys: ' + error.message);
+            }
+        }
+
+        function copyKey(key, password) {
+            const text = `EPRA Exam Prep Activation\nKey: ${key}\nPassword: ${password}\nPrice: KES 2,500/year`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(() => {
+                prompt('Copy manually:', text);
+            });
+        }
+
+        function printKey(key, password) {
+            const receiptHtml = `
+                <div class="receipt">
+                    <h3>EPRA Exam Prep</h3>
+                    <p><strong>Activation Key:</strong> ${key}</p>
+                    <p><strong>Password:</strong> ${password}</p>
+                    <p><strong>Price:</strong> KES 2,500/year</p>
+                    <p style="margin-top: 10px; color: #666;">
+                        Go to EPRA Exam Prep → Upgrade → Enter Key & Password
+                    </p>
+                    <p style="color: #ff9800;">Safari Softwares © 2026</p>
+                </div>
+            `;
+            document.getElementById('receiptArea').innerHTML = receiptHtml;
+            setTimeout(() => window.print(), 500);
+        }
+
+        function filterKeys(filter) {
+            currentKeyFilter = filter;
+            // Update active button
+            event.target.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            loadKeys();
+        }
+
+        async function loadKeys() {
+            try {
+                const data = await EPRA.apiRequest(`/admin/keys?status=${currentKeyFilter}`, 'GET', null, 'admin');
+                
+                const keysDiv = document.getElementById('keysList');
+                if (data.length === 0) {
+                    keysDiv.innerHTML = '<p style="text-align:center;padding:2rem;color:#999;">No keys found</p>';
+                    return;
+                }
+                
+                let html = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Password</th>
+                                    <th>Status</th>
+                                    <th>Used By</th>
+                                    <th>Created</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.forEach(key => {
+                    const statusBadge = key.is_used ? 
+                        '<span class="badge badge-danger">Used</span>' : 
+                        '<span class="badge badge-success">Available</span>';
+                    
+                    html += `
+                        <tr>
+                            <td style="font-family: monospace; font-size: 0.85rem;">${key.key}</td>
+                            <td>${key.password}</td>
+                            <td>${statusBadge}</td>
+                            <td>${key.used_by || '-'}</td>
+                            <td>${EPRA.formatDate(key.created_at)}</td>
+                            <td>
+                                ${!key.is_used ? 
+                                    `<button class="btn btn-small btn-danger" onclick="deactivateKey('${key.key}')">
+                                        Deactivate
+                                    </button>` : 
+                                    '<span style="color: #999;">-</span>'
+                                }
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table></div>';
+                keysDiv.innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('keysList').innerHTML = 
+                    '<p style="text-align:center;color:red;">Error loading keys</p>';
+            }
+        }
+
+        async function deactivateKey(key) {
+            if (!confirm('Are you sure you want to deactivate this key?\n' + key)) return;
+            
+            try {
+                await EPRA.apiRequest('/admin/keys/deactivate', 'POST', { key: key }, 'admin');
+                alert('Key deactivated successfully');
+                loadKeys();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // ==============================
+        // PAYMENT FUNCTIONS
+        // ==============================
+        function filterPayments(filter) {
+            currentFilter = filter;
+            // Update active button
+            event.target.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            loadPayments();
+        }
+
+        async function loadPayments() {
+            try {
+                const data = await EPRA.apiRequest(`/admin/payments?status=${currentFilter}`, 'GET', null, 'admin');
+                
+                const paymentsDiv = document.getElementById('paymentsList');
+                if (data.length === 0) {
+                    paymentsDiv.innerHTML = '<p style="text-align:center;padding:2rem;color:#999;">No payments found</p>';
+                    return;
+                }
+                
+                let html = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Amount</th>
+                                    <th>Phone</th>
+                                    <th>Transaction ID</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.forEach(payment => {
+                    const statusBadge = payment.status === 'verified' ? 
+                        '<span class="badge badge-success">Verified</span>' :
+                        payment.status === 'pending' ? 
+                        '<span class="badge badge-warning">Pending</span>' :
+                        '<span class="badge badge-danger">Rejected</span>';
+                    
+                    html += `
+                        <tr>
+                            <td>#${payment.id}</td>
+                            <td>KES ${payment.amount}</td>
+                            <td>${payment.phone || 'N/A'}</td>
+                            <td>${payment.transaction_id}</td>
+                            <td>${statusBadge}</td>
+                            <td>${EPRA.formatDate(payment.created_at)}</td>
+                            <td>
+                                ${payment.status === 'pending' ? 
+                                    `<button class="btn btn-small btn-success" onclick="verifyPayment(${payment.id})">
+                                        ✅ Verify
+                                    </button>` : 
+                                    '<span style="color: #999;">-</span>'
+                                }
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table></div>';
+                paymentsDiv.innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('paymentsList').innerHTML = 
+                    '<p style="text-align:center;color:red;">Error loading payments</p>';
+            }
+        }
+
+        async function verifyPayment(paymentId) {
+            if (!confirm('Verify this payment and generate activation key?')) return;
+            
+            try {
+                const data = await EPRA.apiRequest('/admin/payments/verify', 'POST', {
+                    payment_id: paymentId
+                }, 'admin');
+                
+                alert(`✅ Payment verified!\n\nActivation Key: ${data.activation_key}\nPassword: ${data.password}`);
+                
+                // Reload payments and dashboard
+                loadPayments();
+                loadDashboard();
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // ==============================
+        // SUBSCRIBER FUNCTIONS
+        // ==============================
+        async function loadSubscribers() {
+            try {
+                const data = await EPRA.apiRequest('/admin/subscribers', 'GET', null, 'admin');
+                
+                const subsDiv = document.getElementById('subscribersList');
+                if (data.length === 0) {
+                    subsDiv.innerHTML = '<p style="text-align:center;padding:2rem;color:#999;">No subscribers found</p>';
+                    return;
+                }
+                
+                let html = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Plan</th>
+                                    <th>Status</th>
+                                    <th>Start Date</th>
+                                    <th>Expires</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.forEach(sub => {
+                    const statusBadge = sub.is_active ? 
+                        '<span class="badge badge-success">Active</span>' : 
+                        '<span class="badge badge-danger">Expired</span>';
+                    
+                    html += `
+                        <tr>
+                            <td>${sub.user?.full_name || 'Unknown'}</td>
+                            <td>${sub.user?.email || 'N/A'}</td>
+                            <td><span class="premium-badge">${sub.plan}</span></td>
+                            <td>${statusBadge}</td>
+                            <td>${EPRA.formatDate(sub.start_date)}</td>
+                            <td>${EPRA.formatDate(sub.end_date)}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table></div>';
+                subsDiv.innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('subscribersList').innerHTML = 
+                    '<p style="text-align:center;color:red;">Error loading subscribers</p>';
+            }
+        }
+
+        // ==============================
+        // USER/STUDENT FUNCTIONS
+        // ==============================
+        async function loadUsers() {
+            try {
+                const data = await EPRA.apiRequest('/admin/users', 'GET', null, 'admin');
+                
+                const usersDiv = document.getElementById('usersList');
+                if (data.length === 0) {
+                    usersDiv.innerHTML = '<p style="text-align:center;padding:2rem;color:#999;">No users found</p>';
+                    return;
+                }
+                
+                let html = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Class</th>
+                                    <th>Premium</th>
+                                    <th>Registered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.forEach(user => {
+                    const premiumBadge = user.is_premium ? 
+                        '<span class="premium-badge">Premium</span>' : 
+                        '<span class="free-badge">Free</span>';
+                    
+                    html += `
+                        <tr>
+                            <td>${user.full_name}</td>
+                            <td>${user.email}</td>
+                            <td>${user.phone || 'N/A'}</td>
+                            <td>${user.certification_class}</td>
+                            <td>${premiumBadge}</td>
+                            <td>${EPRA.formatDate(user.created_at)}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table></div>';
+                usersDiv.innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('usersList').innerHTML = 
+                    '<p style="text-align:center;color:red;">Error loading users</p>';
+            }
+        }
+
+        // ==============================
+        // SETTINGS FUNCTIONS
+        // ==============================
+        document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                document.getElementById('settingsMessage').innerHTML = 
+                    '<div class="alert alert-error">Passwords do not match!</div>';
+                return;
+            }
+            
+            try {
+                await EPRA.apiRequest('/admin/change-password', 'POST', {
+                    current_password: currentPassword,
+                    new_password: newPassword
+                }, 'admin');
+                
+                document.getElementById('settingsMessage').innerHTML = 
+                    '<div class="alert alert-success">✅ Password changed successfully!</div>';
+                
+                this.reset();
+                
+            } catch (error) {
+                document.getElementById('settingsMessage').innerHTML = 
+                    `<div class="alert alert-error">❌ ${error.message}</div>`;
+            }
+        });
+
+        // ==============================
+        // LOGOUT
+        // ==============================
+        function adminLogout() {
+            EPRA.logout('admin');
+        }
+
+        // ==============================
+        // INITIALIZE
+        // ==============================
+        loadDashboard();
     </script>
 </body>
 </html>

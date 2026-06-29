@@ -1,128 +1,183 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Study - EPRA</title><link rel="stylesheet" href="../css/style.css">
-<style>
-.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;justify-content:center}
-.filter-btn{padding:8px 16px;border-radius:20px;border:2px solid #1976d2;background:#fff;color:#1976d2;cursor:pointer;font-weight:600;transition:all 0.3s;font-size:0.85rem}
-.filter-btn:hover,.filter-btn.active{background:#1976d2;color:#fff}
-.show-btn{background:#4caf50;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;margin-top:10px}
-.show-btn:hover{background:#388e3c}
-.answer-box{display:none;margin-top:15px;padding:15px;background:#e8f5e9;border-radius:8px;border-left:4px solid #4caf50}
-.category-badge{display:inline-block;padding:4px 10px;border-radius:15px;font-size:0.75rem;font-weight:600;margin-left:10px}
-.question-count{text-align:center;color:#666;margin-bottom:15px}
-.tab-btn{padding:12px 24px;border:none;cursor:pointer;font-weight:600;font-size:1rem;transition:all 0.3s;background:#ddd;color:#333}
-.tab-btn.active{background:#1976d2;color:#fff}
-.tab-btn:first-child{border-radius:10px 0 0 10px}
-.tab-btn:last-child{border-radius:0 10px 10px 0}
-.practical-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);margin:15px 0;border-left:5px solid #ff9800}
-.practical-card h4{color:#e65100;margin-bottom:10px}
-.steps-list{background:#f5f5f5;padding:15px;border-radius:8px;margin:10px 0}
-.steps-list li{margin:5px 0;padding:5px 0;border-bottom:1px solid #ddd}
-.steps-list li:last-child{border-bottom:none}
-.tip-box{background:#e3f2fd;padding:12px;border-radius:8px;margin:10px 0;border-left:3px solid #1976d2}
-</style></head>
-<body><nav class="navbar"><h2>Study Mode</h2><a href="dashboard.html" class="btn btn-outline">Back</a></nav>
-<div class="exam-container">
-<h2 style="text-align:center;color:#1a237e">Study Materials</h2>
-<div style="display:flex;justify-content:center;margin:20px 0">
-<button class="tab-btn active" onclick="switchTab('theory')">Theory Questions</button>
-<button class="tab-btn" onclick="switchTab('practical')">Practical Scenarios</button>
-</div>
-<div id="theorySection">
-<p class="question-count">Total questions: <b id="totalCount">0</b> | Showing: <b id="showingCount">0</b></p>
-<div class="filter-bar" id="filterBar"></div>
-<div id="theoryContent"><p style="text-align:center;padding:50px">Loading questions...</p></div>
-</div>
-<div id="practicalSection" style="display:none">
-<p class="question-count">Total scenarios: <b id="pracTotal">20</b></p>
-<div id="practicalContent"></div>
-</div>
-</div>
-<script>
-var t=localStorage.getItem("access_token");
-var allQuestions=[],currentFilter="all";
-if(!t)location.href="login.html";
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Mode - EPRA Exam Prep</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span>⚡ Study Mode</span>
+            </div>
+            <div class="nav-actions">
+                <a href="dashboard.html" class="btn btn-outline">← Dashboard</a>
+                <a href="exam.html" class="btn btn-primary">Take Exam</a>
+            </div>
+        </div>
+    </nav>
 
-function switchTab(tab){
-    document.querySelectorAll(".tab-btn").forEach(function(b,i){
-        b.classList.toggle("active",(i===0&&tab==="theory")||(i===1&&tab==="practical"));
-    });
-    document.getElementById("theorySection").style.display=tab==="theory"?"block":"none";
-    document.getElementById("practicalSection").style.display=tab==="practical"?"block":"none";
-    if(tab==="practical")loadPracticalContent();
-}
+    <div class="exam-container">
+        <div id="premiumBanner" style="margin-bottom: 1rem;"></div>
+        
+        <div class="exam-header">
+            <div>
+                <span style="color: #666;">Question</span>
+                <span id="currentQuestionNum" style="font-weight: bold; color: #1a237e;">1</span>
+                <span style="color: #666;">/</span>
+                <span id="totalQuestions" style="color: #666;">0</span>
+            </div>
+            <button onclick="loadNewQuestions()" class="btn btn-outline" style="color:#1a237e;border-color:#1a237e;">
+                <i class="fas fa-sync-alt"></i> New Questions
+            </button>
+        </div>
 
-fetch("http://localhost:5000/api/questions?limit=100",{headers:{"Authorization":"Bearer "+t}})
-.then(function(r){return r.json()})
-.then(function(d){
-    allQuestions=d.questions||[];
-    document.getElementById("totalCount").textContent=allQuestions.length;
-    var categories=[];
-    allQuestions.forEach(function(q){if(categories.indexOf(q.category)===-1)categories.push(q.category)});
-    var filterHTML='<button class="filter-btn active" onclick="filterQuestions(\"all\")">All ('+allQuestions.length+')</button>';
-    categories.forEach(function(cat){
-        var count=allQuestions.filter(function(q){return q.category===cat}).length;
-        filterHTML+='<button class="filter-btn" onclick="filterQuestions(\"'+cat+'\")">'+cat.replace(/_/g," ")+' ('+count+')</button>';
-    });
-    document.getElementById("filterBar").innerHTML=filterHTML;
-    displayQuestions(allQuestions);
-}).catch(function(e){document.getElementById("theoryContent").innerHTML="<p style='color:red;text-align:center'>Error: "+e.message+"</p>"});
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+        </div>
 
-function filterQuestions(cat){
-    currentFilter=cat;
-    document.querySelectorAll("#filterBar .filter-btn").forEach(function(b){b.classList.remove("active")});
-    event.target.classList.add("active");
-    displayQuestions(cat==="all"?allQuestions:allQuestions.filter(function(q){return q.category===cat}));
-}
+        <div class="question-box" id="questionBox">
+            <p style="text-align: center; color: #999;">Loading questions...</p>
+        </div>
 
-function displayQuestions(questions){
-    document.getElementById("showingCount").textContent=questions.length;
-    if(questions.length===0){document.getElementById("theoryContent").innerHTML="<p style='text-align:center'>No questions</p>";return}
-    var bc={"safety":"#f44336","safety_regulations":"#f44336","installation":"#2196f3","installation_practices":"#2196f3","testing":"#9c27b0","testing_inspection":"#9c27b0","kenya_power":"#ff9800","calculations":"#4caf50","earthing":"#795548","earthing_bonding":"#795548","regulations":"#607d8b","regulations_standards":"#607d8b"};
-    var h="";
-    questions.forEach(function(q,i){
-        var c=bc[q.category]||"#1976d2";
-        h+="<div class='question-box'><div style='display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px'><h3>Q"+(i+1)+": "+q.question_text+"</h3><span class='category-badge' style='background:"+c+";color:#fff'>"+q.category.replace(/_/g," ")+"</span></div>";
-        h+="<p style='color:#666;font-size:0.9rem;margin:5px 0'><b>Regulation:</b> "+(q.regulation_reference||"N/A")+" | <b>Difficulty:</b> "+q.difficulty+"</p>";
-        h+="<button class='show-btn' onclick=\"document.getElementById('a"+i+"').style.display='block';this.style.display='none'\">Show Answer</button>";
-        h+="<div id='a"+i+"' class='answer-box'><p><b>Correct Answer:</b> <span style='font-size:1.1rem;color:#2e7d32'>"+(q.correct_answer||"N/A")+"</span></p><p><b>Explanation:</b> "+(q.explanation||"N/A")+"</p>";
-        if(q.practical_tip)h+="<p><b>Field Tip:</b> "+q.practical_tip+"</p>";
-        if(q.calculation_steps)h+="<p><b>Calculation Steps:</b><br>"+JSON.parse(q.calculation_steps).join("<br>")+"</p>";
-        h+="</div></div>";
-    });
-    document.getElementById("theoryContent").innerHTML=h;
-}
+        <div class="exam-actions">
+            <button id="prevBtn" onclick="previousQuestion()" class="btn btn-outline" style="color:#1a237e;border-color:#1a237e;">
+                ← Previous
+            </button>
+            <button id="showAnswerBtn" onclick="revealAnswer()" class="btn btn-primary">
+                <i class="fas fa-lightbulb"></i> Show Answer
+            </button>
+            <button id="nextBtn" onclick="nextQuestion()" class="btn btn-primary">
+                Next →
+            </button>
+        </div>
+    </div>
 
-function loadPracticalContent(){
-    var scenarios=[
-        {title:"RCD Tripping - Shower Fault",cat:"Testing & Fault Finding",s:"RCD keeps tripping when shower is used. Describe your fault-finding procedure.",steps:["Safe isolation - prove dead, lock off, keep key","Visual inspection of shower unit for water ingress/damage","Check cable condition and connections at shower isolator","Test heating element for earth leakage using insulation tester (>1MΩ)","Test RCD at 1x (≤300ms) and 5x (≤40ms)","Measure insulation resistance of shower circuit (>200MΩ new)","Check for loose connections causing intermittent faults"],tip:"RCD is doing its job - never bypass it! Water + electricity = lethal."},
-        {title:"Broken Ring Final Circuit",cat:"Testing & Fault Finding",s:"Ring final has no continuity on neutral. Line and earth are continuous. Diagnose.",steps:["Break in neutral ring - circuit is now two radials","Identify break by splitting ring and testing each segment","Common causes: loose socket terminal, damaged cable in wall","On 32A MCB = DANGEROUS - 2.5mm2 radial on 32A = fire risk","Temporary: downgrade MCB to 20A until break found","Test from CU outward, check each socket systematically","Document findings, issue certificate with limitations"],tip:"Broken ring on 32A MCB = Code C2 Potentially Dangerous. Fix immediately!"},
-        {title:"Low Insulation Resistance",cat:"Testing & Fault Finding",s:"Lighting circuit shows 0.5MΩ IR. Required minimum is 1.0MΩ. What do you do?",steps:["Record reading as unsatisfactory (Code C2 or FI)","Disconnect all loads (lamps, transformers, dimmers)","Retest - loads can cause low readings even with good wiring","If still low, split circuit and test sections to isolate fault","Check for moisture ingress, damaged cables, loose connections","Common culprits: outdoor lights, bathroom fittings, old rubber cables","Issue Electrical Installation Condition Report with findings"],tip:"Always disconnect loads before condemning a circuit! Many low IR readings are from connected equipment."},
-        {title:"High Earth Loop Impedance",cat:"Testing & Fault Finding",s:"Zs at socket is 1.8Ω. 32A Type B MCB. Max Zs is 1.44Ω. Action?",steps:["Verify reading - retest at socket to confirm","Check all connections in circuit for tightness","Check earth conductor continuity - R1+R2 should be consistent","TN system: contact Kenya Power to check supply earth","TT system: check earth electrode resistance (<200Ω)","Consider upgrading earthing or adding supplementary bonding","Record as unsatisfactory until resolved"],tip:"High Zs = fault current may not trip MCB in time. Serious safety issue!"},
-        {title:"RCD Fails to Trip",cat:"Testing & Fault Finding",s:"During testing, a 30mA RCD fails to trip at 1x rated current. What now?",steps:["Verify test equipment is working correctly on known source","Ensure all loads disconnected - residual current affects results","Test RCD at both 0° and 180° waveform positions","If still failing, RCD is faulty - must be replaced","Check for mechanical damage or corrosion on RCD","After replacement, retest fully at 1x and 5x","Document in report - failed RCD = Code C2"],tip:"A failed RCD is a life safety issue. Replace immediately - no exceptions!"},
-        {title:"Shower Installation 8.5kW",cat:"Installation & Design",s:"Install 8.5kW electric shower in bathroom. Complete process from design to testing.",steps:["Calculate load: 8500/240=35.4A. Cable: 6mm2 (short) or 10mm2 (long)","Check bathroom zones - unit must be appropriate for its zone","Install double-pole isolator outside bathroom","Run dedicated circuit from CU - NOT a spur from ring","Protect with 40A MCB + 30mA RCD (or RCBO)","Apply supplementary bonding if required","Full test: continuity, IR, polarity, Zs, RCD trip times"],tip:"35.4A is close to 6mm2 limit. For runs over 20m, use 10mm2. Never spur showers!"},
-        {title:"Adding Sockets to Existing Circuit",cat:"Installation & Design",s:"Client wants 6 double sockets in living room. Existing: 4 sockets on 20A radial 2.5mm2. Assessment?",steps:["Calculate expected load - living room usually low (TV, lamps)","Existing: 2.5mm2 radial on 20A (Method C = 27A capacity)","Option 1: Extend radial if total load <20A and VD acceptable","Option 2: Convert to ring final by adding return leg to CU","Option 3: Split into two radials with separate MCBs","Check voltage drop for total circuit length (max 5%)","Ensure all new sockets have 30mA RCD protection"],tip:"Living room load usually low. Main concern is voltage drop on long runs and RCD protection."},
-        {title:"Kitchen Ring Circuit Design",cat:"Installation & Design",s:"Design kitchen ring for modern kitchen with washing machine, dishwasher, fridge, microwave, 6 sockets.",steps:["Ring circuit: 2.5mm2 cable, 32A MCB, 30mA RCD","Major appliances >2kW need dedicated circuits","Washing machine/dishwasher: dedicated 16A/20A radial","Fridge: consider dedicated circuit (food spoilage if RCD trips)","Cooker: dedicated circuit with diversity calculation","Sockets within 2m of sink need zone consideration","Label CU clearly for each circuit"],tip:"Modern kitchens need multiple circuits. Don't put everything on one ring!"},
-        {title:"Consumer Unit Replacement",cat:"Installation & Design",s:"Replace old consumer unit in domestic property. Complete procedure.",steps:["Request Kenya Power to remove service fuse or isolate","Prove dead at existing CU - test ALL circuits","Label all circuits before disconnecting - take photos","Install new metal CU (BS 7671 requirement for domestic)","Connect main earth and bonding first (10mm2 minimum)","Connect circuits one by one, testing each before energizing","Full test: continuity, IR, polarity, Zs, RCD, functional","Complete Electrical Installation Certificate"],tip:"Never work live! CU change requires full testing and certification. Notifiable work in Kenya."},
-        {title:"Outdoor Socket Installation",cat:"Installation & Design",s:"Install weatherproof socket outdoors for garden use. Requirements and considerations.",steps:["Use IP66 rated socket for outdoor use","RCD protection mandatory - 30mA for socket outlets","Cable: use SWA or suitable weatherproof cable","Buried cable: min 600mm depth with marker tape","If spur from ring: use RCD fused connection unit","Check earthing - exported PME earth may need special consideration","Test: continuity, IR, Zs at outdoor socket, RCD trip time"],tip:"Outdoor electrics = water exposure. IP66 minimum. Always RCD protected!"},
-        {title:"Three-Phase Motor Installation",cat:"Installation & Design",s:"Install 5.5kW 3-phase motor. Cable sizing, protection, and starter selection.",steps:["Calculate FLC: I=P/(√3×V×pf×η)=5500/(1.732×415×0.85×0.9)=10.6A","Cable: 2.5mm2 adequate, size for VD on long runs","MCB: Type C or D for motor starting current","Overload protection: thermal overload relay set to FLC","Starter: DOL or star-delta depending on application","Check phase rotation - wrong rotation = motor runs backwards","Isolator within sight of motor for emergency stopping"],tip:"Motor starting current can be 6-8x FLC. Type C/D MCB prevents nuisance tripping. Check rotation!"},
-        {title:"Earthing for TT System",cat:"Earthing & Bonding",s:"Install earth electrode for TT system. Requirements, testing, and verification.",steps:["Install earth rod (minimum 1.2m deep, 12.5mm diameter)","Multiple rods may be needed for low resistance","Connect to MET with 16mm2 minimum earth conductor","Test earth electrode resistance (fall-of-potential method)","Maximum Ra for 30mA RCD: 50/0.03=1667Ω (aim for <200Ω)","Test RCD trip times after installation","Record Ra value on installation certificate"],tip:"Lower Ra = safer installation. Deep rods or multiple rods reduce resistance. Test in dry weather for worst case."},
-        {title:"Supplementary Bonding in Bathroom",cat:"Earthing & Bonding",s:"Determine if supplementary bonding is required in a bathroom and how to install it.",steps:["Measure resistance between exposed and extraneous conductive parts","If R ≤ 50V/Ia (for 30mA RCD: 1667Ω), bonding may not be required","If required: connect all metal pipework, radiators, and CPCs together","Use 4mm2 minimum green/yellow bonding conductor","Bond to earth terminal of all circuits in the bathroom","Connect to earth terminal at shower, towel rail, radiator pipes","Test continuity of all bonding connections after installation"],tip:"Bonding equalizes potential between metal parts. If you can touch two metal things at once, they should be bonded!"},
-        {title:"Safe Isolation Procedure",cat:"Safety & Regulations",s:"Demonstrate the complete safe isolation procedure before working on a circuit.",steps:["Identify correct isolation point (MCB, switch, or main switch)","Inform all affected persons that power will be disconnected","Test voltage tester on known live source (proving unit)","Test circuit to be isolated - confirm it is live","Switch off/isolate the circuit - lock off with padlock","Keep the key with you at all times","Test circuit again with voltage tester - prove it is dead","Retest voltage tester on known live source - prove tester still works"],tip:"Test your tester BEFORE and AFTER isolation. This proves your tester was working and the circuit really is dead. Never skip this!"},
-        {title:"Permit to Work System",cat:"Safety & Regulations",s:"Explain when a Permit to Work is required and the process involved.",steps:["Required for high-risk work: HV switching, confined spaces, live work","Issued by authorized person (usually supervisor/manager)","Details: exact location, work to be done, hazards, precautions","Specifies isolation points and earthing requirements","Valid for defined time period only (usually one shift)","Must be signed by issuer and recipient before work starts","Cancelled/returned when work is complete and all persons clear"],tip:"Permit to Work is a formal safety document. Never start high-risk work without one. Your life depends on it!"},
-        {title:"Visual Inspection Procedure",cat:"Testing & Fault Finding",s:"Describe what you check during a visual inspection of an electrical installation.",steps:["Check adequacy of earthing and bonding arrangements","Inspect condition of consumer unit and all accessories","Look for signs of overheating, damage, or deterioration","Verify correct cable types and sizes for circuits","Check that RCD protection is provided where required","Ensure cables are properly supported and protected","Verify presence of diagrams, labels, and warning notices","Check for any non-compliant modifications or additions"],tip:"Visual inspection is the first step in any assessment. Many faults are visible before you even test!"},
-        {title:"Emergency Lighting Testing",cat:"Testing & Fault Finding",s:"Describe the testing procedure for emergency lighting in a commercial building.",steps:["Simulate mains failure by operating test switch/circuit breaker","All emergency luminaires should illuminate within 5 seconds","Check that all exit signs are clearly visible and illuminated","Leave on for rated duration (usually 3 hours)","After test: restore mains and check batteries recharge","Record all results in emergency lighting log book","Any failed luminaires must be replaced immediately","Monthly: short functional test. Annually: full duration test"],tip:"Emergency lighting is life safety equipment. Monthly short tests, annual full discharge tests. Keep records!"},
-        {title:"Inspection of Portable Appliances",cat:"Testing & Fault Finding",s:"Describe the PAT testing procedure for portable appliances in an office.",steps:["Visual inspection first: check plug, cable, casing for damage","Check correct fuse rating in plug (3A or 13A as appropriate)","Earth continuity test for Class I equipment (should be <0.1Ω)","Insulation resistance test at 500V DC (>1MΩ pass)","Polarity test: verify line, neutral, earth connected correctly","Functional test: appliance operates correctly","Label appliance with pass/fail sticker and test date","Record results: appliance ID, test values, date, tester name"],tip:"Most faults found during visual inspection. Look for damaged cables, loose plugs, and overheating signs."},
-        {title:"Generator Backup Installation",cat:"Installation & Design",s:"Install a backup generator with changeover switch. Key requirements and safety considerations.",steps:["Install manual or automatic changeover switch rated for full load","Generator must have its own earthing arrangement","Changeover must break all live conductors including neutral","Interlock to prevent simultaneous mains and generator connection","Generator cable sized for full load current + voltage drop","Generator location: well ventilated, away from doors/windows","Test: run generator, verify changeover, check all circuits","Label: warning notice for dual supply at consumer unit"],tip:"The changeover switch MUST break the neutral. Failure to do this can back-feed Kenya Power lines and kill linesmen!"},
-        {title:"Solar PV System Connection",cat:"Installation & Design",s:"Connect a grid-tied solar PV system. Requirements for connection and protection.",steps:["Inverter must comply with Kenya Power grid connection requirements","AC isolator accessible for fire service and Kenya Power","Dedicated circuit from inverter to consumer unit","RCD protection not always required for inverter output (check regs)","Warning label: 'Dual Supply - Solar PV System' at CU","Anti-islanding protection: inverter must shut down if grid fails","Test: verify inverter disconnects when mains is switched off","EPRA registration may be required for the installation"],tip:"Solar PV can kill even when mains is off. The panels produce DC during daylight. Never assume it's dead!"}
-    ];
-    var h="";
-    scenarios.forEach(function(s,i){
-        h+="<div class='practical-card'><div style='display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px'><h4>Scenario "+(i+1)+": "+s.title+"</h4><span class='category-badge' style='background:#ff9800;color:#fff'>"+s.cat+"</span></div>";
-        h+="<p style='font-size:1.1rem;margin:15px 0;line-height:1.6'><b>Situation:</b> "+s.s+"</p>";
-        h+="<div class='steps-list'><h4 style='color:#e65100'>Required Steps:</h4><ol>";
-        s.steps.forEach(function(st){h+="<li>"+st+"</li>"});
-        h+="</ol></div><div class='tip-box'><b>Key Tip:</b> "+s.tip+"</div></div>";
-    });
-    document.getElementById("practicalContent").innerHTML=h;
-}
-</script></body></html>
+    <div id="message-container"></div>
+
+    <script src="../js/app.js"></script>
+    <script>
+        if (!EPRA.requireAuth('student')) {
+            window.location.href = 'login.html';
+        }
+
+        let questions = [];
+        let currentIndex = 0;
+        let answerRevealed = false;
+
+        async function loadStudyQuestions() {
+            try {
+                const data = await EPRA.apiRequest('/study/questions', 'GET', null, 'student');
+                questions = data.questions;
+                currentIndex = 0;
+                answerRevealed = false;
+                
+                document.getElementById('totalQuestions').textContent = questions.length;
+                
+                // Premium banner
+                const bannerDiv = document.getElementById('premiumBanner');
+                if (data.is_premium) {
+                    bannerDiv.innerHTML = '<div class="alert alert-success">' +
+                        '<i class="fas fa-crown"></i> Premium Study Mode - All questions unlocked' +
+                        '</div>';
+                } else {
+                    bannerDiv.innerHTML = '<div class="alert alert-warning">' +
+                        '<i class="fas fa-info-circle"></i> Free Study Mode - 5 questions. ' +
+                        '<a href="upgrade.html" style="color:#ff9800;">Upgrade for unlimited access</a>' +
+                        '</div>';
+                }
+                
+                if (questions.length > 0) {
+                    loadQuestion();
+                } else {
+                    document.getElementById('questionBox').innerHTML = 
+                        '<p style="text-align:center;color:#999;">No questions available</p>';
+                }
+                
+            } catch (error) {
+                EPRA.showMessage('Failed to load questions: ' + error.message, 'error', 'message-container');
+            }
+        }
+
+        function loadQuestion() {
+            if (currentIndex >= questions.length) {
+                currentIndex = 0;
+            }
+            
+            const question = questions[currentIndex];
+            answerRevealed = false;
+            
+            document.getElementById('currentQuestionNum').textContent = currentIndex + 1;
+            
+            // Update progress
+            const progress = ((currentIndex + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            const questionBox = document.getElementById('questionBox');
+            questionBox.innerHTML = `
+                <div class="question-number">Category: ${question.category} | Difficulty: ${question.difficulty}</div>
+                <div class="question-text">${question.question_text}</div>
+                <div class="options-list">
+                    ${question.options.map(option => `
+                        <div class="option" onclick="this.classList.toggle('selected')">${option}</div>
+                    `).join('')}
+                </div>
+                <div id="answerReveal" style="display: none;">
+                    <div class="explanation-box">
+                        <h4>✓ Correct Answer: ${question.correct_answer}</h4>
+                        ${question.explanation ? `<p><strong>Explanation:</strong> ${question.explanation}</p>` : ''}
+                        ${question.regulation_reference ? `<p><strong>Regulation:</strong> ${question.regulation_reference}</p>` : ''}
+                        ${question.practical_tip ? `<p><strong>💡 Practical Tip:</strong> ${question.practical_tip}</p>` : ''}
+                        ${question.calculation_steps ? `<p><strong>📐 Calculation:</strong></p><pre>${question.calculation_steps}</pre>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('showAnswerBtn').textContent = '💡 Show Answer';
+            document.getElementById('prevBtn').style.display = currentIndex === 0 ? 'none' : 'inline-block';
+        }
+
+        function revealAnswer() {
+            const answerDiv = document.getElementById('answerReveal');
+            if (answerDiv) {
+                answerDiv.style.display = 'block';
+                answerRevealed = true;
+                document.getElementById('showAnswerBtn').textContent = '✓ Answer Shown';
+                
+                // Highlight correct answer
+                const question = questions[currentIndex];
+                const options = document.querySelectorAll('.option');
+                options.forEach(option => {
+                    if (option.textContent === question.correct_answer) {
+                        option.classList.add('correct');
+                    }
+                });
+            }
+        }
+
+        function previousQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            }
+        }
+
+        function loadNewQuestions() {
+            loadStudyQuestions();
+        }
+
+        // Initialize
+        loadStudyQuestions();
+    </script>
+</body>
+</html>

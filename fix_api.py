@@ -1,0 +1,8 @@
+f = open('frontend/pages/admin/dashboard.html', 'r', encoding='utf-8')
+c = f.read()
+f.close()
+c = c.replace('api/progress/dashboard', 'api/admin/dashboard')
+f = open('frontend/pages/admin/dashboard.html', 'w', encoding='utf-8')
+f.write(c)
+f.close()
+print('API path fixed!')

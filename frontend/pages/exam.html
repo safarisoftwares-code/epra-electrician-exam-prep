@@ -1,247 +1,412 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Exam - EPRA</title><link rel="stylesheet" href="../css/style.css">
-<style>
-.option{cursor:pointer;transition:all 0.3s;border:3px solid #ddd;padding:15px 20px;margin:10px 0;border-radius:10px;font-size:1.1rem;display:flex;align-items:center;gap:15px}
-.option:hover{border-color:#1976d2;background:#e3f2fd;transform:translateX(5px)}
-.option.selected{border-color:#4caf50!important;background:#e8f5e9!important;font-weight:bold}
-.option .circle{width:30px;height:30px;border:2px solid #999;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:bold}
-.option.selected .circle{border-color:#4caf50;background:#4caf50;color:#fff}
-.qnum{background:#1976d2;color:#fff;padding:8px 16px;border-radius:20px;display:inline-block;margin-bottom:15px}
-.timer-box{background:#ff9800;color:#fff;padding:10px 20px;border-radius:10px;font-size:1.3rem;font-weight:bold;text-align:center;margin:15px 0}
-.review-box{background:#fff;padding:20px;border-radius:12px;margin:15px 0;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-.review-box.correct{border-left:5px solid #4caf50}
-.review-box.wrong{border-left:5px solid #f44336}
-.review-box.skipped{border-left:5px solid #ff9800}
-.mark-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-weight:bold;font-size:0.9rem}
-.mark-correct{background:#e8f5e9;color:#2e7d32}
-.mark-wrong{background:#ffebee;color:#c62828}
-.mark-skipped{background:#fff3e0;color:#e65100}
-.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin:20px 0}
-.summary-card{text-align:center;padding:20px;border-radius:12px;color:#fff}
-.summary-total{background:#1976d2}
-.summary-correct{background:#4caf50}
-.summary-wrong{background:#f44336}
-.summary-score{background:#ff9800}
-.practical-scenario{background:#fff3e0;padding:20px;border-radius:12px;border-left:5px solid #ff9800;margin:15px 0}
-.practical-scenario h4{color:#e65100}
-.practical-steps{background:#e8f5e9;padding:15px;border-radius:8px;margin:10px 0}
-.practical-steps li{margin:5px 0;color:#2e7d32}
-.tab-btn{padding:12px 24px;border:none;cursor:pointer;font-weight:600;font-size:1rem;transition:all 0.3s;background:#ddd;color:#333}
-.tab-btn.active{background:#1976d2;color:#fff}
-.tab-btn:first-child{border-radius:10px 0 0 10px}
-.tab-btn:last-child{border-radius:0 10px 10px 0}
-</style></head>
-<body><nav class="navbar"><h2>EPRA Exam</h2><a href="dashboard.html" class="btn btn-outline">Back</a></nav>
-<div class="exam-container">
-<h2 style="text-align:center;color:#1a237e">EPRA Certification Exam</h2>
-<div style="display:flex;justify-content:center;margin:15px 0">
-<button class="tab-btn active" onclick="switchMode('theory')">Theory Exam</button>
-<button class="tab-btn" onclick="switchMode('practical')">Practical Paper</button>
-</div>
-<div class="timer-box">Time Remaining: <span id="timer">60:00</span></div>
-<button id="startBtn" class="btn btn-primary" style="display:block;margin:20px auto;font-size:1.2rem;padding:15px 40px">Start Exam</button>
-<div id="qArea" style="display:none"></div><div id="resultArea" style="display:none"></div></div>
-<script>
-var qs=[],ci=0,ans={},tl=3600,ti,eid,totalQ=0,currentMode="theory";
-var t=localStorage.getItem("access_token");
-if(!t)location.href="login.html";
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Mode - EPRA Exam Prep</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .review-question {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 5px solid #ddd;
+        }
+        .review-question.correct {
+            border-left-color: #4caf50;
+            background: #f1f8e9;
+        }
+        .review-question.incorrect {
+            border-left-color: #f44336;
+            background: #fef2f2;
+        }
+        .review-question.not-answered {
+            border-left-color: #ff9800;
+            background: #fff8e1;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span>⚡ Exam Mode</span>
+            </div>
+            <div class="nav-actions">
+                <a href="dashboard.html" class="btn btn-outline">← Dashboard</a>
+            </div>
+        </div>
+    </nav>
 
-function switchMode(mode){
-    currentMode=mode;
-    document.querySelectorAll(".tab-btn").forEach(function(b,i){
-        b.classList.toggle("active",(i===0&&mode==="theory")||(i===1&&mode==="practical"));
-    });
-    document.getElementById("startBtn").textContent="Start "+(mode==="theory"?"Theory":"Practical")+" Exam";
-    document.getElementById("startBtn").style.display="block";
-    document.getElementById("qArea").style.display="none";
-    document.getElementById("resultArea").style.display="none";
-    clearInterval(ti);qs=[];ci=0;ans={};tl=3600;
-    document.getElementById("timer").textContent="60:00";
-}
+    <div class="exam-container">
+        <!-- Exam Start Screen -->
+        <div id="startScreen" class="card" style="text-align: center;">
+            <h2 style="color: #1a237e; margin-bottom: 1rem;">Ready to Test Your Knowledge?</h2>
+            <p style="color: #666; margin-bottom: 2rem;">
+                This exam simulates the actual EPRA certification test.<br>
+                You'll be timed and scored based on your answers.
+            </p>
+            <div id="premiumInfo" style="margin-bottom: 1.5rem;"></div>
+            <button onclick="startExam()" class="btn btn-primary btn-large">
+                <i class="fas fa-play"></i> Start Exam
+            </button>
+        </div>
 
-document.getElementById("startBtn").addEventListener("click",function(){
-    if(currentMode==="practical"){startPractical();return}
-    fetch("http://localhost:5000/api/exam/start",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({total_questions:5})})
-    .then(function(r){return r.json()}).then(function(d){
-        if(d.error){alert(d.error);return}
-        qs=d.questions;totalQ=qs.length;eid=d.exam_id;
-        document.getElementById("startBtn").style.display="none";showQ();
-        ti=setInterval(function(){tl--;var m=Math.floor(tl/60),s=tl%60;
-        document.getElementById("timer").textContent=m+":"+(s<10?"0":"")+s;if(tl<=0)submitE()},1000)
-    }).catch(function(e){alert("Error: "+e)})
-});
+        <!-- Active Exam Screen -->
+        <div id="examScreen" style="display: none;">
+            <div class="exam-header">
+                <div>
+                    <span style="color: #666;">Question</span>
+                    <span id="currentQuestionNum" style="font-weight: bold; color: #1a237e;">1</span>
+                    <span style="color: #666;">/</span>
+                    <span id="totalQuestions" style="color: #666;">10</span>
+                </div>
+                <div class="timer" id="timer">00:00</div>
+                <button onclick="submitExam()" class="btn btn-primary">
+                    Submit Exam
+                </button>
+            </div>
 
-function handleSelect(el){
-    var id=parseInt(el.getAttribute("data-qid"));
-    var o=el.getAttribute("data-opt");
-    o=o.replace(/&#39;/g,"'").replace(/&quot;/g,'"');
-    ans[id]=o;showQ();
-}
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+            </div>
 
-function showQ(){
-    if(ci>=qs.length){submitE();return}
-    var q=qs[ci];var answered=ans[q.id]?true:false;
-    var h="<div class='question-box'><div class='qnum'>Question "+(ci+1)+" of "+totalQ+"</div>";
-    h+="<p style='font-size:1.3rem;margin:20px 0;line-height:1.6'><b>"+q.question_text+"</b></p>";
-    h+="<p style='color:#666;margin-bottom:15px'>Select one answer:</p>";
-    q.options.forEach(function(o,i){
-        var isSel=ans[q.id]===o;
-        h+="<div class='option"+(isSel?" selected":"")+"' data-qid='"+q.id+"' data-opt='"+o.replace(/'/g,"&#39;").replace(/"/g,"&quot;")+"' onclick='handleSelect(this)'>";
-        h+="<div class='circle'>"+(isSel?"&#10003;":"")+"</div> "+o+"</div>"
-    });
-    h+="</div><div style='display:flex;gap:15px;justify-content:center;margin-top:25px;flex-wrap:wrap'>";
-    if(ci>0)h+="<button class='btn' style='background:#666;color:#fff;padding:12px 30px' onclick='prevQ()'>Previous</button>";
-    if(answered)h+="<button class='btn btn-primary' style='background:#4caf50;padding:12px 30px' onclick='nextQ()'>"+(ci<totalQ-1?"Next":"Finish Exam")+"</button>";
-    else h+="<button class='btn' style='padding:12px 30px;background:#999;color:#fff' onclick='nextQ()'>Skip</button>";
-    h+="</div>";
-    document.getElementById("qArea").innerHTML=h;
-    document.getElementById("qArea").style.display="block";window.scrollTo(0,0)
-}
+            <div class="question-box" id="questionBox">
+                <div class="question-number" id="questionCategory"></div>
+                <div class="question-text" id="questionText"></div>
+                <div class="options-list" id="optionsList"></div>
+            </div>
 
-function nextQ(){ci++;showQ()}
-function prevQ(){ci--;showQ()}
+            <div class="exam-actions">
+                <button id="prevBtn" onclick="previousQuestion()" class="btn btn-outline" style="color:#1a237e;border-color:#1a237e;">
+                    ← Previous
+                </button>
+                <button id="nextBtn" onclick="nextQuestion()" class="btn btn-primary">
+                    Next →
+                </button>
+            </div>
+        </div>
 
-function submitE(){
-    var skipped=0;
-    for(var i=0;i<qs.length;i++){if(!ans[qs[i].id])skipped++;}
-    if(skipped>0){
-        var msg="You have "+skipped+" unanswered question(s).\n\nClick OK to submit anyway, or Cancel to go back.";
-        if(!confirm(msg))return;
-    }
-    clearInterval(ti);
-    document.getElementById("qArea").style.display="none";
-    document.getElementById("resultArea").innerHTML="<div class='question-box' style='text-align:center'><h2>Submitting...</h2></div>";
-    document.getElementById("resultArea").style.display="block";
-    fetch("http://localhost:5000/api/exam/submit",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({exam_id:eid,answers:ans,time_taken:3600-tl})})
-    .then(function(r){return r.json()}).then(function(d){
-        var correct=d.correct_count||0,wrong=d.wrong_count||0,skipped=d.skipped||0;
-        var cl=d.passed?"#4caf50":"#f44336";
-        var msg=d.passed?"PASSED! Congratulations!":"Not passed. Keep practicing!";
-        var html="<div class='question-box' style='text-align:center'><h2>Exam Complete!</h2>";
-        html+="<div style='font-size:5rem;color:"+cl+";font-weight:bold;margin:20px 0'>"+d.percentage+"%</div>";
-        html+="<p style='font-size:1.3rem;color:"+cl+";font-weight:bold'>"+msg+"</p>";
-        html+="<div class='summary-grid'>";
-        html+="<div class='summary-card summary-total'><h3>"+d.total+"</h3><p>Total</p></div>";
-        html+="<div class='summary-card summary-correct'><h3>"+correct+"</h3><p>Correct</p></div>";
-        html+="<div class='summary-card summary-wrong'><h3>"+wrong+"</h3><p>Wrong</p></div>";
-        html+="<div class='summary-card summary-score'><h3>"+d.percentage+"%</h3><p>Score</p></div>";
-        html+="</div><p style='color:#666'>Pass mark: 70% | Time: "+Math.floor((3600-tl)/60)+"m "+(3600-tl)%60+"s</p>";
-        html+="<div style='margin:20px 0;display:flex;gap:15px;justify-content:center'><a href='dashboard.html' class='btn btn-primary'>Dashboard</a><a href='exam.html' class='btn' style='background:#1976d2;color:#fff'>Retake</a></div></div>";
-        html+="<h3 style='color:#1a237e;margin-top:30px'>Marking Scheme</h3>";
-        qs.forEach(function(q,i){
-            var userAns=ans[q.id]||null,isCorrect=userAns===q.correct_answer;
-            var cls=userAns?(isCorrect?"correct":"wrong"):"skipped";
-            var badge=userAns?(isCorrect?"CORRECT":"WRONG"):"SKIPPED";
-            var badgeCls=userAns?(isCorrect?"mark-correct":"mark-wrong"):"mark-skipped";
-            html+="<div class='review-box "+cls+"'>";
-            html+="<div style='display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px'>";
-            html+="<h4>Q"+(i+1)+": "+q.question_text+"</h4>";
-            html+="<span class='mark-badge "+badgeCls+"'>"+badge+"</span></div>";
-            html+="<p><b>Your answer:</b> "+(userAns||"<i>No answer</i>")+"</p>";
-            if(!isCorrect&&userAns)html+="<p style='color:#c62828'><b>Correct:</b> "+q.correct_answer+"</p>";
-            if(q.explanation)html+="<p style='color:#555'><b>Explanation:</b> "+q.explanation+"</p>";
-            if(q.practical_tip)html+="<p style='color:#1976d2'><b>Field Tip:</b> "+q.practical_tip+"</p>";
-            html+="</div>";
-        });
-        document.getElementById("resultArea").innerHTML=html
-    }).catch(function(e){document.getElementById("resultArea").innerHTML="<p style='color:red'>Error: "+e.message+"</p>"})
-}
+        <!-- Results Screen with Marking Scheme -->
+        <div id="resultsScreen" style="display: none;">
+            <div class="card" style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #1a237e; margin-bottom: 1.5rem;">Exam Results</h2>
+                <div id="resultsSummary"></div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="toggleReview()" class="btn btn-primary">
+                        <i class="fas fa-search"></i> <span id="reviewBtnText">View Marking Scheme</span>
+                    </button>
+                    <button onclick="window.location.href='dashboard.html'" class="btn btn-outline" style="color:#1a237e;border-color:#1a237e;">
+                        Back to Dashboard
+                    </button>
+                    <button onclick="window.location.reload()" class="btn btn-outline" style="color:#ff9800;border-color:#ff9800;">
+                        Take Another Exam
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Marking Scheme Review -->
+            <div id="reviewSection" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📝 Detailed Marking Scheme</h3>
+                        <span id="reviewStats" style="color: #666;"></span>
+                    </div>
+                    <div id="reviewContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-// PRACTICAL EXAM MODE
-function startPractical(){
-    document.getElementById("startBtn").style.display="none";
-    document.getElementById("timer").textContent="30:00";tl=1800;
-    var practicalQuestions=[
-        {scenario:"You arrive at a house where the RCD keeps tripping when the shower is used. Describe your fault-finding procedure step by step.",
-         steps:["Perform safe isolation - prove dead, lock off, keep key",
-                "Visual inspection of shower unit for water ingress or damage",
-                "Check cable condition and connections at shower isolator",
-                "Test heating element for earth leakage using insulation tester",
-                "Test RCD for correct operation at 1x and 5x rated current",
-                "Measure insulation resistance of shower circuit",
-                "Check for loose connections causing intermittent faults"],
-         keyPoints:"Safety first! The RCD is doing its job - don't bypass it. Water + electricity = danger. Always test, never assume."},
-        {scenario:"A client wants to add 6 double sockets in their living room. The existing circuit has 4 double sockets on a 20A MCB with 2.5mm2 cable. What considerations and calculations do you make?",
-         steps:["Calculate total expected load/demand for new sockets",
-                "Verify existing cable capacity (2.5mm2 = 27A clipped direct)",
-                "Check if existing 20A MCB is adequate or needs upgrade",
-                "Consider changing to ring final circuit or upgrading to 32A radial",
-                "Check voltage drop for the extended circuit length",
-                "Ensure additional RCD protection (30mA) for all socket outlets",
-                "Verify safe zones for cable routing in walls"],
-         keyPoints:"2.5mm2 radial on 20A is limited. Consider converting to ring or upgrading. Always check voltage drop on long runs."},
-        {scenario:"You need to install a 8.5kW electric shower in a bathroom. Describe the complete installation process including cable sizing, protection, and safety considerations.",
-         steps:["Calculate load: 8500/240 = 35.4A - use 40A MCB with 6mm2 or 10mm2 cable",
-                "Check bathroom zones - shower unit location relative to bath/shower",
-                "Install double-pole isolator switch outside bathroom (pull cord or wall switch)",
-                "Run dedicated circuit from consumer unit - not a spur from ring",
-                "Ensure 30mA RCD protection for the shower circuit",
-                "Apply supplementary bonding if required in bathroom",
-                "Test: continuity, insulation resistance, polarity, Zs, RCD trip time"],
-         keyPoints:"35.4A is close to 6mm2 limit for long runs - consider 10mm2. Never spur from ring for high-power appliances!"},
-        {scenario:"During a periodic inspection, you find a ring final circuit with no continuity on the neutral conductor. The line and earth are continuous. What does this indicate and what action do you take?",
-         steps:["This indicates a break in the neutral ring - circuit is now two radials",
-                "Identify the break location by splitting the ring and testing segments",
-                "Common causes: loose connection at socket terminal, damaged cable in wall",
-                "If on 32A MCB, this is dangerous - 2.5mm2 radials on 32A = fire risk",
-                "Temporary solution: downgrade MCB to 20A until break is found",
-                "Systematic approach: test from CU outward, check each socket",
-                "Document findings and issue appropriate certificate with limitations"],
-         keyPoints:"A broken ring on 32A MCB is a Code C2 - Potentially Dangerous. Fix it or downgrade the breaker immediately!"},
-        {scenario:"You are to install a consumer unit change in a domestic property. Describe the full procedure from start to finish.",
-         steps:["Contact Kenya Power to remove service fuse (or use safe isolation if cut-out accessible)",
-                "Prove dead at existing CU - test all circuits",
-                "Label all circuits before disconnecting - take photos",
-                "Install new CU with adequate IP rating for location",
-                "Connect main earth and bonding conductors first (10mm2 minimum)",
-                "Connect circuits one by one, testing each before energizing",
-                "Full test sequence: continuity, IR, polarity, Zs, RCD, functional tests",
-                "Complete Electrical Installation Certificate with all test results"],
-         keyPoints:"Never work live! CU change requires full testing and certification. This is notifiable work in Kenya."}
-    ];
-    qs=practicalQuestions;totalQ=qs.length;ci=0;
-    showPracticalQ();
-    ti=setInterval(function(){tl--;var m=Math.floor(tl/60),s=tl%60;
-        document.getElementById("timer").textContent=m+":"+(s<10?"0":"")+s;if(tl<=0)finishPractical()},1000)
-}
+    <div id="message-container"></div>
 
-function showPracticalQ(){
-    if(ci>=qs.length){finishPractical();return}
-    var q=qs[ci];
-    var h="<div class='practical-scenario'><div class='qnum'>Scenario "+(ci+1)+" of "+totalQ+"</div>";
-    h+="<h4>Practical Assessment Question</h4>";
-    h+="<p style='font-size:1.2rem;margin:15px 0;line-height:1.6'>"+q.scenario+"</p>";
-    h+="<div class='practical-steps'><h4 style='color:#2e7d32'>Required Steps/Points:</h4><ol>";
-    q.steps.forEach(function(s){h+="<li>"+s+"</li>"});
-    h+="</ol></div>";
-    h+="<div style='background:#e3f2fd;padding:15px;border-radius:8px;margin:10px 0'>";
-    h+="<h4 style='color:#1565c0'>Key Safety Points:</h4><p>"+q.keyPoints+"</p></div>";
-    h+="<p style='color:#666;margin:10px 0'>Rate your knowledge (self-assessment):</p>";
-    ["I can do this confidently","I understand but need practice","I need more training"].forEach(function(r,i){
-        h+="<div class='option"+(ans[ci]===i?" selected":"")+"' onclick='ans["+ci+"]="+i+";showPracticalQ()'>";
-        h+="<div class='circle'>"+(ans[ci]===i?"&#10003;":"")+"</div> "+r+"</div>"
-    });
-    h+="</div><div style='display:flex;gap:15px;justify-content:center;margin-top:25px'>";
-    if(ci>0)h+="<button class='btn' style='background:#666;color:#fff;padding:12px 30px' onclick='ci--;showPracticalQ()'>Previous</button>";
-    h+="<button class='btn btn-primary' style='padding:12px 30px' onclick='ci++;showPracticalQ()'>"+(ci<totalQ-1?"Next Scenario":"Finish Practical")+"</button>";
-    h+="</div>";
-    document.getElementById("qArea").innerHTML=h;
-    document.getElementById("qArea").style.display="block";window.scrollTo(0,0)
-}
+    <script src="../js/app.js"></script>
+    <script>
+        if (!EPRA.requireAuth('student')) {
+            window.location.href = 'login.html';
+        }
 
-function finishPractical(){
-    clearInterval(ti);
-    document.getElementById("qArea").style.display="none";
-    var html="<div class='question-box' style='text-align:center'><h2>Practical Assessment Complete!</h2>";
-    html+="<p style='font-size:1.2rem;margin:20px 0'>You have reviewed <b>"+totalQ+"</b> practical scenarios.</p>";
-    html+="<p style='color:#666'>These scenarios cover common EPRA practical test situations.</p>";
-    html+="<div class='practical-steps' style='text-align:left'><h4>Practical Exam Tips:</h4><ul>";
-    html+="<li>Always demonstrate safe isolation first</li><li>Use proper test equipment - not just a multimeter</li>";
-    html+="<li>Follow CIPELR testing sequence</li><li>Explain what you are doing as you work</li>";
-    html+="<li>Reference regulations when answering oral questions</li></ul></div>";
-    html+="<div style='margin:20px 0'><a href='dashboard.html' class='btn btn-primary'>Dashboard</a> ";
-    html+="<a href='exam.html' class='btn' style='background:#1976d2;color:#fff'>More Practice</a></div></div>";
-    document.getElementById("resultArea").innerHTML=html;
-    document.getElementById("resultArea").style.display="block"
-}
-</script></body></html>
+        let currentExam = null;
+        let questions = [];
+        let currentIndex = 0;
+        let answers = {};
+        let timerInterval = null;
+        let startTime = null;
+        let currentReviewData = null;
+
+        // Check premium status on load
+        async function checkPremiumStatus() {
+            try {
+                const data = await EPRA.apiRequest('/premium/status', 'GET', null, 'student');
+                const infoDiv = document.getElementById('premiumInfo');
+                
+                if (data.is_premium) {
+                    infoDiv.innerHTML = '<span class="premium-badge">Premium - Full Exam with Marking Scheme</span>';
+                } else {
+                    infoDiv.innerHTML = '<span class="free-badge">Free - Basic Exam</span> ' +
+                        '<br><a href="upgrade.html" style="color:#ff9800;">Upgrade for full exam & detailed marking schemes</a>';
+                }
+            } catch (error) {
+                console.error('Failed to check premium status:', error);
+            }
+        }
+
+        async function startExam() {
+            try {
+                const startBtn = document.querySelector('#startScreen button');
+                startBtn.disabled = true;
+                startBtn.textContent = 'Loading...';
+
+                const data = await EPRA.apiRequest('/exam/start', 'POST', {}, 'student');
+                
+                currentExam = data;
+                questions = data.questions;
+                currentIndex = 0;
+                answers = {};
+                startTime = Date.now();
+
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('examScreen').style.display = 'block';
+                document.getElementById('totalQuestions').textContent = data.total_questions;
+
+                startTimer();
+                loadQuestion();
+
+            } catch (error) {
+                EPRA.showMessage('Failed to start exam: ' + error.message, 'error', 'message-container');
+                const startBtn = document.querySelector('#startScreen button');
+                startBtn.disabled = false;
+                startBtn.textContent = 'Start Exam';
+            }
+        }
+
+        function loadQuestion() {
+            if (currentIndex >= questions.length) {
+                submitExam();
+                return;
+            }
+
+            const question = questions[currentIndex];
+            
+            document.getElementById('currentQuestionNum').textContent = currentIndex + 1;
+            document.getElementById('questionCategory').textContent = 
+                `Category: ${question.category} | Difficulty: ${question.difficulty}`;
+            document.getElementById('questionText').textContent = question.question_text;
+            
+            const progress = ((currentIndex + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            const optionsList = document.getElementById('optionsList');
+            optionsList.innerHTML = '';
+            
+            question.options.forEach((option) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                
+                if (answers[question.id] === option) {
+                    optionDiv.classList.add('selected');
+                }
+                
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => selectOption(question.id, option, optionDiv);
+                optionsList.appendChild(optionDiv);
+            });
+
+            document.getElementById('prevBtn').style.display = currentIndex === 0 ? 'none' : 'inline-block';
+            document.getElementById('nextBtn').textContent = 
+                currentIndex === questions.length - 1 ? 'Finish →' : 'Next →';
+        }
+
+        function selectOption(questionId, option, element) {
+            document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            answers[questionId] = option;
+        }
+
+        function previousQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            } else {
+                if (confirm('Are you sure you want to submit the exam?')) {
+                    submitExam();
+                }
+            }
+        }
+
+        async function submitExam() {
+            clearInterval(timerInterval);
+            
+            const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+            
+            try {
+                const data = await EPRA.apiRequest('/exam/submit', 'POST', {
+                    exam_id: currentExam.exam_id,
+                    answers: answers,
+                    time_taken: timeTaken
+                }, 'student');
+
+                // Fetch the detailed review with marking scheme
+                const reviewData = await EPRA.apiRequest(`/exam/review/${data.exam_id}`, 'GET', null, 'student');
+                currentReviewData = reviewData;
+
+                document.getElementById('examScreen').style.display = 'none';
+                document.getElementById('resultsScreen').style.display = 'block';
+                
+                const resultsSummary = document.getElementById('resultsSummary');
+                const passed = data.passed;
+                
+                resultsSummary.innerHTML = `
+                    <div style="font-size: 3rem; margin: 1rem 0;">
+                        ${passed ? '🎉' : '📚'}
+                    </div>
+                    <h3 style="color: ${passed ? '#4caf50' : '#f44336'};">
+                        ${passed ? 'Congratulations! You Passed!' : 'Keep Practicing!'}
+                    </h3>
+                    <div class="stats-grid" style="margin-top: 1.5rem;">
+                        <div class="stat-card">
+                            <h2 style="color: ${passed ? '#4caf50' : '#f44336'};">${data.percentage}%</h2>
+                            <p>Score</p>
+                        </div>
+                        <div class="stat-card">
+                            <h2>${data.score}/${data.total}</h2>
+                            <p>Correct Answers</p>
+                        </div>
+                        <div class="stat-card">
+                            <h2>${Math.floor(timeTaken / 60)}:${(timeTaken % 60).toString().padStart(2, '0')}</h2>
+                            <p>Time Taken</p>
+                        </div>
+                    </div>
+                    <p style="margin-top: 1rem; color: #666;">${data.message}</p>
+                    <p style="margin-top: 0.5rem; color: #ff9800;">
+                        <i class="fas fa-lightbulb"></i> Click "View Marking Scheme" to see detailed answers
+                    </p>
+                `;
+
+                // Pre-render the review
+                renderReview();
+
+            } catch (error) {
+                EPRA.showMessage('Failed to submit exam: ' + error.message, 'error', 'message-container');
+            }
+        }
+
+        function toggleReview() {
+            const reviewSection = document.getElementById('reviewSection');
+            const reviewBtnText = document.getElementById('reviewBtnText');
+            
+            if (reviewSection.style.display === 'none' || !reviewSection.style.display) {
+                reviewSection.style.display = 'block';
+                reviewBtnText.textContent = 'Hide Marking Scheme';
+                reviewSection.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                reviewSection.style.display = 'none';
+                reviewBtnText.textContent = 'View Marking Scheme';
+            }
+        }
+
+        function renderReview() {
+            if (!currentReviewData) return;
+            
+            const reviewContent = document.getElementById('reviewContent');
+            const reviewStats = document.getElementById('reviewStats');
+            
+            const correct = currentReviewData.questions.filter(q => q.is_correct).length;
+            const total = currentReviewData.total_questions;
+            
+            reviewStats.textContent = `${correct}/${total} correct | ${currentReviewData.answered_questions}/${total} answered`;
+            
+            let html = '';
+            
+            currentReviewData.questions.forEach((question, index) => {
+                let statusClass = 'not-answered';
+                let statusIcon = '⚠️';
+                
+                if (question.user_answer === 'Not answered') {
+                    statusClass = 'not-answered';
+                    statusIcon = '⚠️ Not Answered';
+                } else if (question.is_correct) {
+                    statusClass = 'correct';
+                    statusIcon = '✅ Correct';
+                } else {
+                    statusClass = 'incorrect';
+                    statusIcon = '❌ Incorrect';
+                }
+                
+                html += `
+                    <div class="review-question ${statusClass}">
+                        <h4 style="margin-bottom: 10px;">
+                            Question ${index + 1}: ${statusIcon}
+                            <span style="font-size: 0.85rem; color: #666;">(${question.category})</span>
+                        </h4>
+                        <p style="font-weight: 500; margin-bottom: 15px;">${question.question_text}</p>
+                        
+                        <div style="margin-bottom: 15px;">
+                            ${question.options.map(option => {
+                                let bgColor = 'white';
+                                let borderColor = '#ddd';
+                                let label = '';
+                                
+                                if (option === question.correct_answer) {
+                                    bgColor = '#e8f5e9';
+                                    borderColor = '#4caf50';
+                                    label = ' ✓ (Correct Answer)';
+                                }
+                                if (option === question.user_answer && option !== question.correct_answer) {
+                                    bgColor = '#ffebee';
+                                    borderColor = '#f44336';
+                                    label = ' ← (Your Answer)';
+                                }
+                                if (option === question.correct_answer && option === question.user_answer) {
+                                    bgColor = '#e8f5e9';
+                                    borderColor = '#4caf50';
+                                    label = ' ✓ (Correct - Your Answer)';
+                                }
+                                
+                                return `<div style="padding: 10px; margin: 5px 0; border-radius: 8px; 
+                                              border: 1px solid ${borderColor}; background: ${bgColor};">
+                                    ${option}${label}
+                                </div>`;
+                            }).join('')}
+                        </div>
+                        
+                        ${question.explanation ? `
+                            <div class="explanation-box">
+                                <h4>📖 Explanation:</h4>
+                                <p>${question.explanation}</p>
+                                ${question.regulation_reference ? `<p><strong>📋 Regulation:</strong> ${question.regulation_reference}</p>` : ''}
+                                ${question.practical_tip ? `<p><strong>💡 Practical Tip:</strong> ${question.practical_tip}</p>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            reviewContent.innerHTML = html;
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Initialize
+        checkPremiumStatus();
+    </script>
+</body>
+</html>

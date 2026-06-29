@@ -1,1 +1,143 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>EPRA Exam Prep - Safari Softwares</title><link rel="stylesheet" href="css/style.css"></head><body><nav class="navbar"><h2>EPRA Exam Prep</h2><div id="authButtons"><a href="pages/login.html" class="btn btn-outline">Login</a><a href="pages/upgrade.html" class="btn btn-outline" style="color:#ff9800;border-color:#ff9800">💎 Upgrade</a><a href="pages/register.html" class="btn btn-primary">Register</a></div><div id="userMenu" style="display:none"><a href="pages/dashboard.html">Dashboard</a><button onclick="logout()" class="btn btn-outline">Logout</button></div></nav><section class="hero"><h1>Master Your <span class="highlight">EPRA</span> Certification</h1><p>Practice exams for Class C, B, and A electricians | Safari Softwares (c) 2026</p><a href="pages/register.html" class="btn btn-primary" style="font-size:1.2rem;padding:15px 40px">Start Free Practice</a></section><section class="features"><h2>Why Choose Us?</h2><div class="features-grid"><div class="feature-card"><div class="feature-icon">P</div><h3>Full Exam Simulation</h3><p>Timed exams matching EPRA format</p></div><div class="feature-card"><div class="feature-icon">M</div><h3>Study Materials</h3><p>Detailed explanations & tips</p></div><div class="feature-card"><div class="feature-icon">K</div><h3>Kenya-Specific</h3><p>Kenya Power & EPRA standards</p></div></div></section><footer class="footer"><p>(c) 2026 Safari Softwares | <a href="mailto:safarisoftwares@gmail.com">safarisoftwares@gmail.com</a></p><p><a href="..//terms">Terms</a> | <a href="..//privacy">Privacy</a> | <a href="..//copyright">Copyright</a></p></footer><script src="js/app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPRA Electrician Exam Prep - Safari Softwares</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon">⚡</span>
+                <span class="brand-text">EPRA Exam Prep</span>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="index.html" class="nav-link active">Home</a>
+                <a href="pages/dashboard.html" class="nav-link">Dashboard</a>
+                <a href="pages/exam.html" class="nav-link">Exam</a>
+                <a href="pages/study.html" class="nav-link">Study</a>
+                <a href="pages/upgrade.html" class="nav-link" style="color:#ff9800;font-weight:bold;">💎 Upgrade</a>
+            </div>
+            <div class="nav-actions">
+                <div id="authButtons">
+                    <a href="pages/login.html" class="btn btn-outline">Login</a>
+                    <a href="pages/register.html" class="btn btn-primary">Register</a>
+                </div>
+                <div id="userMenu" style="display:none;">
+                    <span id="userName" class="user-name"></span>
+                    <button onclick="EPRA.logout('student')" class="btn btn-outline">Logout</button>
+                </div>
+                <button class="menu-toggle" onclick="EPRA.toggleMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Master Your <span class="highlight">EPRA Electrician</span> Certification</h1>
+            <p class="hero-subtitle">
+                Comprehensive exam preparation for Class C, B, and A electricians. 
+                Built by Safari Softwares to help you pass your EPRA certification exam.
+            </p>
+            <div class="hero-actions">
+                <a href="pages/register.html" class="btn btn-primary btn-large">
+                    <i class="fas fa-bolt"></i> Start Free Practice
+                </a>
+                <a href="pages/upgrade.html" class="btn btn-outline btn-large">
+                    <i class="fas fa-crown"></i> View Premium
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number">100+</span>
+                    <span class="stat-label">Exam Questions</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">70%</span>
+                    <span class="stat-label">Pass Mark</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">24/7</span>
+                    <span class="stat-label">Access</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <h2 class="section-title">Why Choose Our Platform?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <h3>Full Exam Simulation</h3>
+                <p>Timed exams matching actual EPRA format with real-world scenarios</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <h3>Study Materials</h3>
+                <p>Detailed explanations, regulations, and practical tips</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Progress Tracking</h3>
+                <p>Monitor your improvement and identify weak areas</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔧</div>
+                <h3>Practical Scenarios</h3>
+                <p>Real-world field situations and installation scenarios</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>Mobile Friendly</h3>
+                <p>Study anywhere, on any device, at any time</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🇰🇪</div>
+                <h3>Kenya-Specific</h3>
+                <p>Based on Kenya Power standards and EPRA regulations</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h4>⚡ EPRA Exam Prep</h4>
+            <p>Your pathway to EPRA certification success.</p>
+            <p class="copyright">© 2026 Safari Softwares. All rights reserved.</p>
+        </div>
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <a href="pages/exam.html">Practice Exam</a>
+            <a href="pages/study.html">Study Mode</a>
+            <a href="pages/upgrade.html">Premium Access</a>
+            <a href="pages/dashboard.html">Dashboard</a>
+        </div>
+        <div class="footer-section">
+            <h4>Legal</h4>
+            <a href="pages/terms.html">Terms of Use</a>
+            <a href="pages/privacy.html">Privacy Policy</a>
+            <a href="pages/copyright.html">Copyright Notice</a>
+        </div>
+        <div class="footer-section">
+            <h4>Contact</h4>
+            <p><i class="fas fa-envelope"></i> safarisoftwares@gmail.com</p>
+            <p><i class="fas fa-phone"></i> +254 700 000000</p>
+            <p><i class="fas fa-map-marker-alt"></i> Nairobi, Kenya</p>
+        </div>
+    </div>
+</footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,96 +1,368 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Upgrade to Premium - EPRA</title><link rel="stylesheet" href="../css/style.css">
-<style>
-body{background:#f5f5f5}
-.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:2rem;max-width:1000px;margin:2rem auto;padding:0 1rem}
-.plan-card{background:#fff;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.1);overflow:hidden;transition:transform 0.3s;position:relative}
-.plan-card:hover{transform:translateY(-5px)}
-.plan-card.premium{border:2px solid #ff9800}
-.plan-header{text-align:center;padding:2rem;color:#fff}
-.plan-header.free{background:linear-gradient(135deg,#1976d2,#42a5f5)}
-.plan-header.premium{background:linear-gradient(135deg,#ff9800,#f57c00)}
-.plan-header h2{font-size:1.8rem;margin-bottom:0.5rem}
-.plan-price{font-size:3rem;font-weight:bold}
-.plan-price span{font-size:1rem;opacity:0.8}
-.plan-body{padding:2rem}
-.plan-body ul{list-style:none;padding:0}
-.plan-body li{padding:10px 0;border-bottom:1px solid #eee}
-.plan-body li:before{content:"✅ ";color:#4caf50}
-.plan-body li.no:before{content:"❌ ";color:#f44336}
-.plan-btn{display:block;text-align:center;padding:15px;margin:20px;border-radius:10px;font-weight:bold;font-size:1.1rem;text-decoration:none;transition:all 0.3s}
-.plan-btn.free{background:#1976d2;color:#fff}.plan-btn.free:hover{background:#1565c0}
-.plan-btn.premium{background:#ff9800;color:#fff}.plan-btn.premium:hover{background:#f57c00}
-.badge{position:absolute;top:15px;right:15px;background:#ff9800;color:#fff;padding:5px 15px;border-radius:20px;font-weight:bold}
-.activate-box{background:#fff;padding:30px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.1);max-width:500px;margin:2rem auto}
-.activate-box input{width:100%;padding:12px;margin:8px 0;border:2px solid #ddd;border-radius:8px;font-size:1rem}
-.activate-box button{width:100%;padding:15px;background:#4caf50;color:#fff;border:none;border-radius:8px;font-size:1.1rem;font-weight:bold;cursor:pointer;margin-top:10px}
-.activate-box button:hover{background:#388e3c}
-</style></head>
-<body><nav class="navbar"><div class="nav-container"><div class="nav-brand"><span class="brand-icon">⚡</span><span>EPRA Exam Prep</span></div><div><a href="../index.html" class="btn btn-outline">Home</a><a href="dashboard.html" class="btn btn-outline">Dashboard</a></div></div></nav>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade to Premium - EPRA Exam Prep</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th {
+            background: #1a237e;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        .comparison-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        .comparison-table tr:hover {
+            background: #f5f5f5;
+        }
+        .check-icon {
+            color: #4caf50;
+            font-size: 1.2rem;
+        }
+        .cross-icon {
+            color: #f44336;
+            font-size: 1.2rem;
+        }
+        .highlight-row {
+            background: #fff8e1;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span>⚡ Upgrade to Premium</span>
+            </div>
+            <div class="nav-actions">
+                <a href="dashboard.html" class="btn btn-outline">← Dashboard</a>
+                <a href="../index.html" class="btn btn-outline">Home</a>
+            </div>
+        </div>
+    </nav>
 
-<div style="max-width:1200px;margin:0 auto;padding:2rem 1rem">
-<h1 style="text-align:center;color:#1a237e;margin-bottom:2rem">Choose Your Plan</h1>
+    <div class="upgrade-container" style="max-width: 900px;">
+        <div id="currentStatus" style="margin-bottom: 2rem;"></div>
+        <div id="message-container"></div>
 
-<div class="pricing-grid">
-<div class="plan-card"><div class="plan-header free"><h2>🆓 Freemium</h2><div class="plan-price">FREE<span>/forever</span></div></div><div class="plan-body"><ul>
-<li>20 Practice Questions</li>
-<li>2 Practical Scenarios</li>
-<li>5-Question Exam</li>
-<li>Basic Study Mode</li>
-<li>1 Attempt/Day</li>
-<li class="no">Marking Scheme</li>
-<li class="no">Progress History</li>
-<li class="no">Certificates</li>
-<li class="no">Offline Access</li>
-<li class="no">Priority Support</li>
-</ul></div><a href="register.html" class="plan-btn free">Start Free</a></div>
+        <!-- Benefits Comparison -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <h2 style="color: #1a237e; text-align: center; margin-bottom: 1.5rem;">
+                <i class="fas fa-balance-scale"></i> Free vs Premium Comparison
+            </h2>
+            
+            <div class="table-container">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">Feature</th>
+                            <th style="width: 30%;">Free Plan</th>
+                            <th style="width: 30%; background: #ff9800;">Premium (KES 2,500/yr)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: left;"><strong>Practice Questions</strong></td>
+                            <td><span class="cross-icon">✗</span> 5 Questions</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> 100+ Questions</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;"><strong>Exam Attempts</strong></td>
+                            <td><span class="cross-icon">✗</span> Limited</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> Unlimited</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;"><strong>Marking Scheme Review</strong></td>
+                            <td><span class="cross-icon">✗</span> Basic</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> Full Detailed Review</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;"><strong>Explanations</strong></td>
+                            <td><span class="cross-icon">✗</span> Limited</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> Complete Explanations</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;"><strong>Regulation References</strong></td>
+                            <td><span class="cross-icon">✗</span> Basic</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> Full BS 7671 & EPRA Refs</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;"><strong>Practical Tips</strong></td>
+                            <td><span class="cross-icon">✗</span> Not Included</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> Expert Tips Included</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;"><strong>All Certification Classes</strong></td>
+                            <td><span class="cross-icon">✗</span> Class C Only</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> Class C, B & A</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;"><strong>Progress Tracking</strong></td>
+                            <td><span class="check-icon">✓</span> Basic</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> Advanced Analytics</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;"><strong>Study Mode</strong></td>
+                            <td><span class="check-icon">✓</span> 5 Questions</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> Full Access</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;"><strong>Exam History</strong></td>
+                            <td><span class="check-icon">✓</span> Basic</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> Full History & Review</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-<div class="plan-card premium"><span class="badge">BEST VALUE</span><div class="plan-header premium"><h2>💎 Premium</h2><div class="plan-price">KES 2,500<span>/year</span></div></div><div class="plan-body"><ul>
-<li>100+ Practice Questions</li>
-<li>20 Practical Scenarios</li>
-<li>40-Question Full Exam</li>
-<li>Advanced Study + Filters</li>
-<li>Unlimited Attempts</li>
-<li>Full Marking Scheme</li>
-<li>Progress History & Charts</li>
-<li>Printable Certificates</li>
-<li>Offline PWA Access</li>
-<li>WhatsApp Priority Support</li>
-</ul></div><a href="#pay" class="plan-btn premium">Upgrade Now</a></div>
-</div>
+        <!-- Pricing Card -->
+        <div class="pricing-card premium" style="margin-bottom: 2rem;">
+            <h2 style="color: #1a237e;">Premium Access</h2>
+            <div class="price">KES 2,500<span>/year</span></div>
+            <p style="color: #666;">One-time payment for 365 days of full access</p>
+            
+            <ul class="benefits-list">
+                <li>✓ 100+ EPRA Exam Questions</li>
+                <li>✓ Unlimited Exam Attempts</li>
+                <li>✓ Full Marking Schemes with Explanations</li>
+                <li>✓ Detailed BS 7671 & EPRA References</li>
+                <li>✓ Expert Practical Tips</li>
+                <li>✓ All Certification Classes (C, B, A)</li>
+                <li>✓ Advanced Progress Analytics</li>
+                <li>✓ Priority Email Support</li>
+            </ul>
+        </div>
 
-<div id="pay" style="background:#fff;padding:30px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.1);max-width:600px;margin:2rem auto;text-align:center">
-<h2 style="color:#1a237e">How to Pay</h2>
-<div style="background:#f5f5f5;padding:20px;border-radius:10px;margin:15px 0;text-align:left">
-<p><b>1.</b> Go to M-Pesa → Lipa na M-Pesa → <b>Paybill</b></p>
-<p><b>2.</b> Business Number: <b style="font-size:1.3rem;color:#1976d2">516600</b></p>
-<p><b>3.</b> Account Number: <b style="font-size:1.3rem;color:#1976d2">528591</b></p>
-<p><b>4.</b> Amount: <b style="font-size:1.3rem">KES 2,500</b></p>
-<p><b>5.</b> Send payment confirmation to:</p>
-<p>📱 <b>WhatsApp: 0112168732</b></p>
-<p>📧 <b>Email: safarisoftwares@gmail.com</b></p>
-</div>
-<p style="color:#666">You will receive your activation key within 24 hours</p>
-</div>
+        <!-- Activation Key Tab -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-key" style="color: #ff9800;"></i> 
+                    Activate with Key
+                </h3>
+            </div>
+            <p style="color: #666; margin-bottom: 1rem;">
+                Already purchased a key? Enter it below to activate your premium access immediately.
+            </p>
+            
+            <form id="activateForm">
+                <div class="form-group">
+                    <label for="activationKey">Activation Key</label>
+                    <input type="text" id="activationKey" class="form-control" 
+                           placeholder="Format: EPRA-XXXX-XXXX-XXXX" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="activationPassword">Password</label>
+                    <input type="text" id="activationPassword" class="form-control" 
+                           placeholder="Enter the password provided with your key" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-unlock"></i> Activate Premium Now
+                </button>
+            </form>
+        </div>
 
-<div class="activate-box"><h2 style="text-align:center;color:#1a237e">Already Have a Key?</h2>
-<input type="text" id="actKey" placeholder="Enter Activation Key (e.g. EPRA-XXXX-XXXX-XXXX)">
-<input type="text" id="actPass" placeholder="Enter Password">
-<button onclick="activate()">Activate Premium Now</button>
-<p id="msg" style="text-align:center;margin-top:15px;font-weight:bold"></p>
-</div>
-</div>
+        <!-- M-Pesa Payment Tab -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-mobile-alt" style="color: #4caf50;"></i>
+                    Pay with M-Pesa
+                </h3>
+            </div>
+            <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h4 style="color: #2e7d32; margin-bottom: 15px;">📱 How to Pay:</h4>
+                <ol style="line-height: 2; margin-left: 20px; color: #333;">
+                    <li>Go to <strong>M-Pesa</strong> on your phone</li>
+                    <li>Select <strong>Lipa na M-Pesa</strong> → <strong>Buy Goods & Services</strong></li>
+                    <li>Enter Till Number: <strong style="color: #1a237e; font-size: 1.1rem;">000000</strong></li>
+                    <li>Enter Amount: <strong style="color: #ff9800; font-size: 1.1rem;">KES 2,500</strong></li>
+                    <li>Enter your M-Pesa PIN and confirm</li>
+                    <li>You'll receive a confirmation SMS with a transaction ID</li>
+                    <li>Enter the transaction ID below to verify your payment</li>
+                </ol>
+            </div>
+            
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label for="transactionId">M-Pesa Transaction ID</label>
+                    <input type="text" id="transactionId" class="form-control" 
+                           placeholder="e.g., QWE1234567 (from M-Pesa SMS)" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phoneNumber">M-Pesa Phone Number</label>
+                    <input type="tel" id="phoneNumber" class="form-control" 
+                           placeholder="e.g., 0712345678" required>
+                </div>
+                
+                <button type="submit" class="btn btn-success" style="width: 100%;">
+                    <i class="fas fa-check-circle"></i> Submit Payment for Verification
+                </button>
+                
+                <p style="text-align: center; margin-top: 10px; color: #666; font-size: 0.9rem;">
+                    Your activation key will be sent after verification (usually within 1 hour)
+                </p>
+            </form>
+        </div>
 
-<script>
-var t=localStorage.getItem("access_token");
-function activate(){
-    var key=document.getElementById("actKey").value.trim();
-    var pass=document.getElementById("actPass").value.trim();
-    if(!key||!pass){document.getElementById("msg").innerHTML="<span style='color:red'>Enter both key and password</span>";return}
-    if(!t){document.getElementById("msg").innerHTML="<span style='color:red'>Please <a href='login.html'>login</a> first</span>";return}
-    fetch("http://localhost:5000/api/activate",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({key:key,password:pass})})
-    .then(r=>r.json()).then(d=>{
-        if(d.error)document.getElementById("msg").innerHTML="<span style='color:red'>"+d.error+"</span>";
-        else document.getElementById("msg").innerHTML="<span style='color:green'>✅ Premium Activated! <a href='dashboard.html'>Go to Dashboard</a></span>";
-    }).catch(e=>document.getElementById("msg").innerHTML="<span style='color:red'>Error: "+e.message+"</span>")
-}
-</script></body></html>
+        <!-- Need Help -->
+        <div class="card" style="margin-top: 2rem; text-align: center; background: #e3f2fd;">
+            <p style="margin: 0;">
+                <i class="fas fa-question-circle"></i> 
+                <strong>Need help?</strong> Contact us at 
+                <a href="mailto:safarisoftwares@gmail.com" style="color: #1a237e; font-weight: 600;">
+                    safarisoftwares@gmail.com
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <script src="../js/app.js"></script>
+    <script>
+        // Check authentication - but allow viewing the page without login
+        const isLoggedIn = EPRA.requireAuth('student');
+        
+        // Load premium status if logged in
+        async function loadStatus() {
+            if (!isLoggedIn) {
+                document.getElementById('currentStatus').innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Please <a href="login.html" style="color: #1a237e;">login</a> to activate premium or submit payment.</strong>
+                    </div>
+                `;
+                // Disable forms
+                document.getElementById('activateForm').style.opacity = '0.5';
+                document.getElementById('paymentForm').style.opacity = '0.5';
+                document.getElementById('activateForm').querySelectorAll('input, button').forEach(el => el.disabled = true);
+                document.getElementById('paymentForm').querySelectorAll('input, button').forEach(el => el.disabled = true);
+                return;
+            }
+            
+            try {
+                const data = await EPRA.apiRequest('/premium/status', 'GET', null, 'student');
+                const statusDiv = document.getElementById('currentStatus');
+                
+                if (data.is_premium) {
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-crown"></i> 
+                            <strong>Premium Active!</strong> 
+                            Your premium access expires on ${EPRA.formatDate(data.expires)} 
+                            (${data.days_remaining} days remaining)
+                        </div>
+                    `;
+                    // Disable forms if already premium
+                    document.getElementById('activateForm').style.opacity = '0.5';
+                    document.getElementById('paymentForm').style.opacity = '0.5';
+                    document.getElementById('activateForm').querySelectorAll('input, button').forEach(el => el.disabled = true);
+                    document.getElementById('paymentForm').querySelectorAll('input, button').forEach(el => el.disabled = true);
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle"></i> 
+                            You're on the <strong>Free Plan</strong>. Upgrade now for full access!
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load status:', error);
+            }
+        }
+
+        // Activate with key
+        document.getElementById('activateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const key = document.getElementById('activationKey').value.trim();
+            const password = document.getElementById('activationPassword').value.trim();
+            
+            if (!key || !password) {
+                EPRA.showMessage('Please enter both key and password', 'error', 'message-container');
+                return;
+            }
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Activating...';
+            
+            try {
+                const data = await EPRA.apiRequest('/premium/activate', 'POST', {
+                    key: key,
+                    password: password
+                }, 'student');
+                
+                EPRA.showMessage('✅ Premium activated successfully! Redirecting...', 'success', 'message-container');
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 2000);
+                
+            } catch (error) {
+                EPRA.showMessage('❌ ' + (error.message || 'Activation failed'), 'error', 'message-container');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-unlock"></i> Activate Premium Now';
+            }
+        });
+
+        // Submit payment
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const transactionId = document.getElementById('transactionId').value.trim();
+            const phone = document.getElementById('phoneNumber').value.trim();
+            
+            if (!transactionId || !phone) {
+                EPRA.showMessage('Please enter both transaction ID and phone number', 'error', 'message-container');
+                return;
+            }
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            
+            try {
+                const data = await EPRA.apiRequest('/premium/payment', 'POST', {
+                    transaction_id: transactionId,
+                    phone: phone,
+                    amount: 2500,
+                    payment_method: 'mpesa'
+                }, 'student');
+                
+                EPRA.showMessage(
+                    '✅ Payment submitted successfully! You will receive your activation key after verification (usually within 1 hour). Check your email or contact support.', 
+                    'success', 
+                    'message-container'
+                );
+                
+                document.getElementById('paymentForm').reset();
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Payment for Verification';
+                
+            } catch (error) {
+                EPRA.showMessage('❌ ' + (error.message || 'Payment submission failed'), 'error', 'message-container');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Payment for Verification';
+            }
+        });
+
+        // Initialize
+        loadStatus();
+    </script>
+</body>
+</html>

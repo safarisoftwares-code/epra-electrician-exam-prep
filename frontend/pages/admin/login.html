@@ -1,3 +1,108 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Admin Login</title><link rel="stylesheet" href="../../css/style.css"></head>
-<body style="background:#1a237e"><div style="max-width:400px;margin:100px auto;padding:30px;background:#fff;border-radius:15px"><h2 style="text-align:center;color:#1a237e">Admin Panel</h2><form id="f"><input type="text" id="username" placeholder="Username" required style="width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:8px"><input type="password" id="password" placeholder="Password" required style="width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:8px"><button type="submit" class="btn btn-primary" style="width:100%">Login</button></form><p id="msg" style="text-align:center;margin-top:10px;color:red"></p></div>
-<script>document.getElementById("f").addEventListener("submit",async function(e){e.preventDefault();try{var r=await fetch("http://localhost:5000/api/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:document.getElementById("username").value,password:document.getElementById("password").value})});var d=await r.json();if(r.ok){localStorage.setItem("admin_token",d.access_token);location.href="dashboard.html"}else{document.getElementById("msg").textContent=d.error}}catch(err){document.getElementById("msg").textContent="Error connecting"}});</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - EPRA Exam Prep</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a237e, #283593);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .admin-login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+        .admin-login-box h2 {
+            text-align: center;
+            color: #1a237e;
+            margin-bottom: 10px;
+        }
+        .admin-login-box .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-login-box">
+        <div style="text-align: center; font-size: 3rem; margin-bottom: 10px;">⚡</div>
+        <h2>Admin Panel</h2>
+        <p class="subtitle">EPRA Exam Prep Management</p>
+        
+        <div id="message-container"></div>
+        
+        <form id="adminLoginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" class="form-control" placeholder="Enter admin username" required autocomplete="username">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" placeholder="Enter admin password" required autocomplete="current-password">
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                <i class="fas fa-lock"></i> Admin Login
+            </button>
+        </form>
+        
+        <p style="text-align: center; margin-top: 2rem; font-size: 0.85rem; color: #999;">
+            © 2026 Safari Softwares<br>
+            <a href="../../index.html" style="color: #ff9800;">← Back to Website</a>
+        </p>
+    </div>
+
+    <script src="../../js/app.js"></script>
+    <script>
+        // Clear any existing admin token
+        EPRA.removeToken('admin');
+        
+        document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+            
+            try {
+                const data = await EPRA.apiRequest('/admin/login', 'POST', {
+                    username: username,
+                    password: password
+                }, 'admin');
+                
+                // Store admin token
+                EPRA.setToken(data.access_token, 'admin');
+                
+                // Show success message
+                EPRA.showMessage('Login successful! Redirecting...', 'success', 'message-container');
+                
+                // Redirect to admin dashboard
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+                
+            } catch (error) {
+                EPRA.showMessage('❌ ' + (error.message || 'Invalid credentials'), 'error', 'message-container');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-lock"></i> Admin Login';
+            }
+        });
+    </script>
+</body>
+</html>

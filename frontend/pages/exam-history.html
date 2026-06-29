@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam History - EPRA Exam Prep</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span>⚡ Exam History</span>
+            </div>
+            <div class="nav-actions">
+                <a href="dashboard.html" class="btn btn-outline">← Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">All Exam Attempts</h3>
+                <button onclick="clearHistory()" class="btn btn-small btn-danger">
+                    <i class="fas fa-trash"></i> Clear All History
+                </button>
+            </div>
+            <div id="message-container"></div>
+            <div id="allExams" style="overflow-x: auto;">
+                <p style="text-align: center; color: #999;">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div id="reviewModal" class="modal">
+        <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3 style="color: #1a237e;">📝 Exam Review - Marking Scheme</h3>
+                <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+            </div>
+            <div id="reviewContent"></div>
+        </div>
+    </div>
+
+    <script src="../js/app.js"></script>
+    <script>
+        if (!EPRA.requireAuth('student')) {
+            window.location.href = 'login.html';
+        }
+
+        async function loadAllExams() {
+            try {
+                const data = await EPRA.apiRequest('/exam/history', 'GET', null, 'student');
+                const examsDiv = document.getElementById('allExams');
+                
+                if (data.exams && data.exams.length > 0) {
+                    let html = `
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Questions</th>
+                                        <th>Correct</th>
+                                        <th>Score</th>
+                                        <th>Result</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    data.exams.forEach(exam => {
+                        const resultBadge = exam.passed ? 
+                            '<span style="color:#4caf50;font-weight:600;">✓ PASSED</span>' : 
+                            '<span style="color:#f44336;font-weight:600;">✗ FAILED</span>';
+                        
+                        html += `
+                            <tr>
+                                <td>${EPRA.formatDate(exam.started_at)}</td>
+                                <td>${exam.exam_type}</td>
+                                <td>${exam.total_questions}</td>
+                                <td>${exam.correct_answers}</td>
+                                <td>${exam.score_percentage}%</td>
+                                <td>${resultBadge}</td>
+                                <td>
+                                    <button onclick="viewExamReview(${exam.id})" class="btn btn-small btn-primary">
+                                        📝 Review
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += '</tbody></table></div>';
+                    examsDiv.innerHTML = html;
+                } else {
+                    examsDiv.innerHTML = '<p style="text-align:center;padding:2rem;color:#999;">No exam history found</p>';
+                }
+                
+            } catch (error) {
+                document.getElementById('allExams').innerHTML = 
+                    '<p style="text-align:center;color:red;">Failed to load exam history</p>';
+            }
+        }
+
+        async function viewExamReview(examId) {
+            try {
+                const data = await EPRA.apiRequest(`/exam/review/${examId}`, 'GET', null, 'student');
+                
+                let reviewHTML = '';
+                
+                data.questions.forEach((question, index) => {
+                    let statusIcon = question.is_correct ? '✅ Correct' : 
+                                    question.user_answer === 'Not answered' ? '⚠️ Not Answered' : '❌ Incorrect';
+                    
+                    reviewHTML += `
+                        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; 
+                                    border-left: 5px solid ${question.is_correct ? '#4caf50' : question.user_answer === 'Not answered' ? '#ff9800' : '#f44336'};
+                                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <h4>Question ${index + 1}: ${statusIcon}</h4>
+                            <p style="font-weight: 500;">${question.question_text}</p>
+                            
+                            <div style="margin: 10px 0;">
+                                ${question.options.map(option => {
+                                    let style = 'padding: 8px; margin: 3px 0; border-radius: 6px; border: 1px solid #ddd;';
+                                    let label = '';
+                                    
+                                    if (option === question.correct_answer) {
+                                        style += 'background: #e8f5e9; border-color: #4caf50;';
+                                        label = ' ✓';
+                                    }
+                                    if (option === question.user_answer && option !== question.correct_answer) {
+                                        style += 'background: #ffebee; border-color: #f44336;';
+                                        label = ' ← Your Answer';
+                                    }
+                                    
+                                    return `<div style="${style}">${option}${label}</div>`;
+                                }).join('')}
+                            </div>
+                            
+                            ${question.explanation ? `
+                                <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; margin-top: 10px;">
+                                    <strong>📖 Explanation:</strong> ${question.explanation}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('reviewContent').innerHTML = reviewHTML;
+                document.getElementById('reviewModal').classList.add('active');
+                
+            } catch (error) {
+                alert('Failed to load review: ' + error.message);
+            }
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.remove('active');
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('reviewModal');
+            if (event.target === modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        async function clearHistory() {
+            if (!confirm('Delete ALL exam history? This cannot be undone.')) return;
+            if (!confirm('Are you absolutely sure?')) return;
+            
+            try {
+                const data = await EPRA.apiRequest('/exam/history/clear', 'DELETE', null, 'student');
+                EPRA.showMessage(`✅ ${data.message}`, 'success', 'message-container');
+                setTimeout(() => loadAllExams(), 1000);
+            } catch (error) {
+                EPRA.showMessage('Failed to clear history: ' + error.message, 'error', 'message-container');
+            }
+        }
+
+        loadAllExams();
+    </script>
+</body>
+</html>
