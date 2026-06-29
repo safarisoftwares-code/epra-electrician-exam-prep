@@ -27,6 +27,24 @@
             border-left-color: #ff9800;
             background: #fff8e1;
         }
+        .type-card {
+            cursor: pointer;
+            max-width: 250px;
+            border: 3px solid #ddd;
+            transition: all 0.3s;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        .type-card.selected {
+            border-color: #ff9800 !important;
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(255,152,0,0.3);
+        }
     </style>
 </head>
 <body>
@@ -45,13 +63,39 @@
         <!-- Exam Start Screen -->
         <div id="startScreen" class="card" style="text-align: center;">
             <h2 style="color: #1a237e; margin-bottom: 1rem;">Ready to Test Your Knowledge?</h2>
-            <p style="color: #666; margin-bottom: 2rem;">
-                This exam simulates the actual EPRA certification test.<br>
-                You'll be timed and scored based on your answers.
+            <p style="color: #666; margin-bottom: 1.5rem;">
+                Choose your exam type below.<br>
+                <strong>Theory</strong> tests regulations & calculations. <strong>Practical</strong> tests real-world problem solving.
             </p>
+            
+            <!-- Question Type Selection -->
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                <div id="theoryCard" class="type-card" onclick="selectExamType('theory')">
+                    <div style="font-size: 2.5rem;">📝</div>
+                    <h3 style="color: #1a237e;">Theory</h3>
+                    <p style="font-size: 0.85rem; color: #666;">Regulations, calculations, standards</p>
+                    <span style="background: #e3f2fd; color: #1565c0; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">100 Questions</span>
+                </div>
+                
+                <div id="practicalCard" class="type-card" onclick="selectExamType('practical')">
+                    <div style="font-size: 2.5rem;">🔧</div>
+                    <h3 style="color: #1a237e;">Practical</h3>
+                    <p style="font-size: 0.85rem; color: #666;">Real-world scenarios & field problems</p>
+                    <span style="background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">60 Scenarios</span>
+                </div>
+                
+                <div id="mixedCard" class="type-card" onclick="selectExamType('mixed')">
+                    <div style="font-size: 2.5rem;">🎯</div>
+                    <h3 style="color: #1a237e;">Mixed</h3>
+                    <p style="font-size: 0.85rem; color: #666;">Both theory & practical combined</p>
+                    <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">160 Questions</span>
+                </div>
+            </div>
+            
             <div id="premiumInfo" style="margin-bottom: 1.5rem;"></div>
-            <button onclick="startExam()" class="btn btn-primary btn-large">
-                <i class="fas fa-play"></i> Start Exam
+            
+            <button id="startExamBtn" onclick="startExam()" class="btn btn-primary btn-large" disabled style="opacity: 0.5;">
+                <i class="fas fa-hand-pointer"></i> Select Exam Type First
             </button>
         </div>
 
@@ -63,6 +107,7 @@
                     <span id="currentQuestionNum" style="font-weight: bold; color: #1a237e;">1</span>
                     <span style="color: #666;">/</span>
                     <span id="totalQuestions" style="color: #666;">10</span>
+                    <span id="examTypeLabel" style="margin-left: 10px; font-size: 0.85rem; color: #ff9800;"></span>
                 </div>
                 <div class="timer" id="timer">00:00</div>
                 <button onclick="submitExam()" class="btn btn-primary">
@@ -108,7 +153,6 @@
                 </div>
             </div>
             
-            <!-- Marking Scheme Review -->
             <div id="reviewSection" style="display: none;">
                 <div class="card">
                     <div class="card-header">
@@ -136,8 +180,8 @@
         let timerInterval = null;
         let startTime = null;
         let currentReviewData = null;
+        let selectedExamType = null;
 
-        // Check premium status on load
         async function checkPremiumStatus() {
             try {
                 const data = await EPRA.apiRequest('/premium/status', 'GET', null, 'student');
@@ -146,7 +190,7 @@
                 if (data.is_premium) {
                     infoDiv.innerHTML = '<span class="premium-badge">Premium - Full Exam with Marking Scheme</span>';
                 } else {
-                    infoDiv.innerHTML = '<span class="free-badge">Free - Basic Exam</span> ' +
+                    infoDiv.innerHTML = '<span class="free-badge">Free - Basic Exam (5 Questions)</span> ' +
                         '<br><a href="upgrade.html" style="color:#ff9800;">Upgrade for full exam & detailed marking schemes</a>';
                 }
             } catch (error) {
@@ -154,13 +198,39 @@
             }
         }
 
-        async function startExam() {
-            try {
-                const startBtn = document.querySelector('#startScreen button');
-                startBtn.disabled = true;
-                startBtn.textContent = 'Loading...';
+        function selectExamType(type) {
+            selectedExamType = type;
+            
+            // Reset all cards
+            document.getElementById('theoryCard').classList.remove('selected');
+            document.getElementById('practicalCard').classList.remove('selected');
+            document.getElementById('mixedCard').classList.remove('selected');
+            
+            // Highlight selected
+            const cardMap = { theory: 'theoryCard', practical: 'practicalCard', mixed: 'mixedCard' };
+            document.getElementById(cardMap[type]).classList.add('selected');
+            
+            // Enable start button
+            const startBtn = document.getElementById('startExamBtn');
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            
+            const typeLabels = { theory: 'Theory', practical: 'Practical', mixed: 'Mixed (Both)' };
+            startBtn.innerHTML = `<i class="fas fa-play"></i> Start ${typeLabels[type]} Exam`;
+        }
 
-                const data = await EPRA.apiRequest('/exam/start', 'POST', {}, 'student');
+        async function startExam() {
+            if (!selectedExamType) {
+                alert('Please select an exam type first');
+                return;
+            }
+            
+            try {
+                const startBtn = document.getElementById('startExamBtn');
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+                const data = await EPRA.apiRequest(`/exam/start?type=${selectedExamType}`, 'POST', {}, 'student');
                 
                 currentExam = data;
                 questions = data.questions;
@@ -171,15 +241,19 @@
                 document.getElementById('startScreen').style.display = 'none';
                 document.getElementById('examScreen').style.display = 'block';
                 document.getElementById('totalQuestions').textContent = data.total_questions;
+                
+                const typeLabels = { theory: '📝 Theory', practical: '🔧 Practical', mixed: '🎯 Mixed' };
+                document.getElementById('examTypeLabel').textContent = typeLabels[selectedExamType] || '';
 
                 startTimer();
                 loadQuestion();
 
             } catch (error) {
                 EPRA.showMessage('Failed to start exam: ' + error.message, 'error', 'message-container');
-                const startBtn = document.querySelector('#startScreen button');
+                const startBtn = document.getElementById('startExamBtn');
                 startBtn.disabled = false;
-                startBtn.textContent = 'Start Exam';
+                const typeLabels = { theory: 'Theory', practical: 'Practical', mixed: 'Mixed (Both)' };
+                startBtn.innerHTML = `<i class="fas fa-play"></i> Start ${typeLabels[selectedExamType]} Exam`;
             }
         }
 
@@ -256,7 +330,6 @@
                     time_taken: timeTaken
                 }, 'student');
 
-                // Fetch the detailed review with marking scheme
                 const reviewData = await EPRA.apiRequest(`/exam/review/${data.exam_id}`, 'GET', null, 'student');
                 currentReviewData = reviewData;
 
@@ -293,7 +366,6 @@
                     </p>
                 `;
 
-                // Pre-render the review
                 renderReview();
 
             } catch (error) {
@@ -405,7 +477,6 @@
             }, 1000);
         }
 
-        // Initialize
         checkPremiumStatus();
     </script>
 </body>

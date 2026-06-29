@@ -232,7 +232,7 @@ def get_exam_questions():
 @app.route('/api/exam/start', methods=['POST'])
 @jwt_required()
 def start_exam():
-    """Start a new exam session"""
+    """Start a new exam session with optional type filter"""
     try:
         identity = get_jwt_identity()
         if not identity.startswith('user_'):
@@ -241,16 +241,28 @@ def start_exam():
         user_id = int(identity.replace('user_', ''))
         premium = is_premium_user(user_id)
         
+        # Get exam type from query parameter
+        exam_type = request.args.get('type', 'mixed')
+        
         limit = 100 if premium else 5
-        questions = Question.query.filter_by(is_active=True)\
-            .order_by(db.func.random()).limit(limit).all()
+        
+        # Build query based on exam type
+        query = Question.query.filter_by(is_active=True)
+        
+        if exam_type == 'theory':
+            query = query.filter(~Question.question_text.like('PRACTICAL:%'))
+        elif exam_type == 'practical':
+            query = query.filter(Question.question_text.like('PRACTICAL:%'))
+        # 'mixed' returns all questions
+        
+        questions = query.order_by(db.func.random()).limit(limit).all()
         
         if not questions:
-            return jsonify({'error': 'No questions available'}), 404
+            return jsonify({'error': 'No questions available for this type'}), 404
         
         exam = ExamAttempt(
             user_id=user_id,
-            exam_type='practice',
+            exam_type=f'practice_{exam_type}',
             total_questions=len(questions),
             questions_data=json.dumps([q.id for q in questions])
         )
@@ -261,7 +273,8 @@ def start_exam():
             'exam_id': exam.id,
             'questions': [q.to_dict(include_answer=False) for q in questions],
             'total_questions': len(questions),
-            'is_premium': premium
+            'is_premium': premium,
+            'exam_type': exam_type
         }), 201
         
     except Exception as e:
