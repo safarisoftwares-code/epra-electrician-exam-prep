@@ -29,6 +29,19 @@
             font-weight: 600; 
             font-size: 0.95rem; 
         }
+        .premium-locked {
+            cursor: pointer;
+            position: relative;
+        }
+        .premium-locked:hover {
+            border-color: #ff9800 !important;
+        }
+        .lock-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
@@ -44,6 +57,7 @@
                     <a href="dashboard.html" class="active">📊 Dashboard</a>
                     <a href="exam.html">📝 Exam</a>
                     <a href="study.html">📚 Study</a>
+                    <a href="regulations.html" id="navRegulations">📋 Regulations</a>
                     <a href="upgrade.html" style="color:#ff9800;">💎 Upgrade</a>
                 </div>
             </div>
@@ -98,6 +112,9 @@
                 <button onclick="window.location.href='study.html'" class="btn btn-outline" style="color:#1a237e;border-color:#1a237e;">
                     <i class="fas fa-book"></i> Study Mode
                 </button>
+                <button id="regulationsBtn" class="btn btn-outline premium-locked" style="color:#1a237e;border-color:#1a237e;">
+                    <i class="fas fa-gavel"></i> Regulations Library <span id="regLockIcon" style="margin-left: 5px;">🔒</span>
+                </button>
                 <button onclick="window.location.href='upgrade.html'" class="btn btn-outline" style="color:#ff9800;border-color:#ff9800;">
                     <i class="fas fa-crown"></i> Upgrade to Premium
                 </button>
@@ -140,9 +157,13 @@
             window.location.href = 'login.html';
         }
 
+        let isPremiumUser = false;
+
         async function loadDashboard() {
             try {
                 const data = await EPRA.apiRequest('/student/dashboard', 'GET', null, 'student');
+                
+                isPremiumUser = data.premium.is_premium;
                 
                 // Update student name in both places
                 document.getElementById('studentName').textContent = data.user.full_name;
@@ -170,12 +191,56 @@
                     `;
                 }
                 
+                // Update Regulations Library button
+                updateRegulationsButton();
+                
                 displayRecentExams(data.recent_exams);
                 
             } catch (error) {
                 EPRA.showMessage('Failed to load dashboard: ' + error.message, 'error', 'message-container');
                 if (error.message.includes('Invalid token')) {
                     EPRA.logout('student');
+                }
+            }
+        }
+
+        function updateRegulationsButton() {
+            const regBtn = document.getElementById('regulationsBtn');
+            const regLock = document.getElementById('regLockIcon');
+            const navReg = document.getElementById('navRegulations');
+            
+            if (isPremiumUser) {
+                // Premium - unlocked
+                if (regLock) regLock.innerHTML = '✅';
+                if (regBtn) {
+                    regBtn.title = 'Access Regulations Library';
+                    regBtn.style.borderColor = '#4caf50';
+                    regBtn.onclick = function() { window.location.href = 'regulations.html'; };
+                }
+                if (navReg) {
+                    navReg.href = 'regulations.html';
+                    navReg.style.color = '#fff';
+                }
+            } else {
+                // Free - locked
+                if (regLock) regLock.innerHTML = '🔒';
+                if (regBtn) {
+                    regBtn.title = 'Premium Only - Upgrade to Unlock';
+                    regBtn.onclick = function() {
+                        if (confirm('📋 Regulations Library is a Premium feature.\n\nUpgrade to access:\n• BS 7671 Wiring Regulations\n• Kenya Power Distribution Code\n• Energy Act 2019\n• EPRA Licensing Regulations\n• Building Regulations\n• Safety Standards & Guidance\n\nOnly KES 2,500/year!\n\nGo to Upgrade page?')) {
+                            window.location.href = 'upgrade.html';
+                        }
+                    };
+                }
+                if (navReg) {
+                    navReg.href = '#';
+                    navReg.style.color = '#999';
+                    navReg.onclick = function(e) {
+                        e.preventDefault();
+                        if (confirm('📋 Regulations Library is a Premium feature.\n\nUpgrade to unlock full access.\n\nGo to Upgrade page?')) {
+                            window.location.href = 'upgrade.html';
+                        }
+                    };
                 }
             }
         }
