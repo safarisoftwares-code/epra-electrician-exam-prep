@@ -30,6 +30,7 @@
             margin: 5px 0;
             border-radius: 8px;
             border: 1px solid #ddd;
+            cursor: pointer;
         }
         .option-item.correct-highlight {
             background: #e8f5e9;
@@ -70,25 +71,25 @@
                     <div style="font-size: 2.5rem;">📝</div>
                     <h3 style="color: #1a237e;">Theory</h3>
                     <p style="font-size: 0.85rem; color: #666;">Regulations, calculations, standards</p>
-                    <span style="background: #e3f2fd; color: #1565c0; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">100 Questions</span>
+                    <span id="studyTheoryCount" style="background: #e3f2fd; color: #1565c0; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">40 Questions</span>
                 </div>
                 
                 <div id="practicalCard" class="type-card" onclick="selectStudyType('practical')">
                     <div style="font-size: 2.5rem;">🔧</div>
                     <h3 style="color: #1a237e;">Practical</h3>
                     <p style="font-size: 0.85rem; color: #666;">Real-world scenarios & field problems</p>
-                    <span style="background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">60 Scenarios</span>
+                    <span id="studyPracticalCount" style="background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">8 Scenarios</span>
                 </div>
                 
                 <div id="mixedCard" class="type-card" onclick="selectStudyType('mixed')">
                     <div style="font-size: 2.5rem;">🎯</div>
                     <h3 style="color: #1a237e;">Mixed</h3>
                     <p style="font-size: 0.85rem; color: #666;">Both theory & practical combined</p>
-                    <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">160 Questions</span>
+                    <span id="studyMixedCount" style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">40 Questions</span>
                 </div>
             </div>
             
-            <div id="premiumBanner" style="margin-bottom: 1.5rem;"></div>
+            <div id="studyPremiumBanner" style="margin-bottom: 1.5rem;"></div>
             
             <button id="startStudyBtn" onclick="loadStudyQuestions()" class="btn btn-primary btn-large" disabled style="opacity: 0.5;">
                 <i class="fas fa-hand-pointer"></i> Select Study Type First
@@ -144,18 +145,26 @@
         let currentIndex = 0;
         let answerRevealed = false;
         let selectedStudyType = null;
+        let isStudyPremium = false;
 
         // Check premium status
         async function checkPremiumStatus() {
             try {
                 const data = await EPRA.apiRequest('/premium/status', 'GET', null, 'student');
-                const bannerDiv = document.getElementById('premiumBanner');
+                const bannerDiv = document.getElementById('studyPremiumBanner');
+                isStudyPremium = data.is_premium;
                 
                 if (data.is_premium) {
-                    bannerDiv.innerHTML = '<span class="premium-badge">Premium Study - All questions unlocked</span>';
+                    bannerDiv.innerHTML = '<span class="premium-badge"><i class="fas fa-crown"></i> Premium Study - EPRA Realistic (40 Theory / 8 Practical / 40 Mixed)</span>';
+                    document.getElementById('studyTheoryCount').textContent = '40 Questions';
+                    document.getElementById('studyPracticalCount').textContent = '8 Scenarios';
+                    document.getElementById('studyMixedCount').textContent = '40 Questions';
                 } else {
-                    bannerDiv.innerHTML = '<span class="free-badge">Free Study - 5 Questions</span> ' +
-                        '<a href="upgrade.html" style="color:#ff9800;">Upgrade for unlimited access</a>';
+                    bannerDiv.innerHTML = '<span class="free-badge">Free Trial - Limited Questions</span> ' +
+                        '<br><a href="upgrade.html" style="color:#ff9800;"><i class="fas fa-crown"></i> Upgrade for full EPRA study (40 questions with answers)</a>';
+                    document.getElementById('studyTheoryCount').textContent = '5 Questions';
+                    document.getElementById('studyPracticalCount').textContent = '2 Scenarios';
+                    document.getElementById('studyMixedCount').textContent = '5 Questions';
                 }
             } catch (error) {
                 console.error('Failed to check premium status:', error);
@@ -166,22 +175,22 @@
         function selectStudyType(type) {
             selectedStudyType = type;
             
-            // Reset all cards
             document.getElementById('theoryCard').classList.remove('selected');
             document.getElementById('practicalCard').classList.remove('selected');
             document.getElementById('mixedCard').classList.remove('selected');
             
-            // Highlight selected
             const cardMap = { theory: 'theoryCard', practical: 'practicalCard', mixed: 'mixedCard' };
             document.getElementById(cardMap[type]).classList.add('selected');
             
-            // Enable start button
             const startBtn = document.getElementById('startStudyBtn');
             startBtn.disabled = false;
             startBtn.style.opacity = '1';
             
             const typeLabels = { theory: '📝 Theory', practical: '🔧 Practical', mixed: '🎯 Mixed' };
-            startBtn.innerHTML = `<i class="fas fa-book"></i> Study ${typeLabels[type]}`;
+            const questionCount = isStudyPremium ? 
+                { theory: '40', practical: '8', mixed: '40' } : 
+                { theory: '5', practical: '2', mixed: '5' };
+            startBtn.innerHTML = `<i class="fas fa-book"></i> Study ${typeLabels[type]} (${questionCount[type]} Qs)`;
         }
 
         async function loadStudyQuestions() {
@@ -220,7 +229,10 @@
                 const startBtn = document.getElementById('startStudyBtn');
                 startBtn.disabled = false;
                 const typeLabels = { theory: '📝 Theory', practical: '🔧 Practical', mixed: '🎯 Mixed' };
-                startBtn.innerHTML = `<i class="fas fa-book"></i> Study ${typeLabels[selectedStudyType]}`;
+                const questionCount = isStudyPremium ? 
+                    { theory: '40', practical: '8', mixed: '40' } : 
+                    { theory: '5', practical: '2', mixed: '5' };
+                startBtn.innerHTML = `<i class="fas fa-book"></i> Study ${typeLabels[selectedStudyType]} (${questionCount[selectedStudyType]} Qs)`;
             }
         }
 
@@ -262,12 +274,10 @@
         }
 
         function toggleStudyOption(index) {
-            // Allow user to select/deselect options for practice
             const opt = document.getElementById('opt-' + index);
             if (opt.classList.contains('user-selected-study')) {
                 opt.classList.remove('user-selected-study');
             } else {
-                // Clear all selections first
                 document.querySelectorAll('.option-item').forEach(el => el.classList.remove('user-selected-study'));
                 opt.classList.add('user-selected-study');
             }
@@ -280,7 +290,6 @@
                 answerRevealed = true;
                 document.getElementById('showAnswerBtn').innerHTML = '<i class="fas fa-check-circle"></i> Answer Shown';
                 
-                // Highlight correct answer
                 const question = questions[currentIndex];
                 const options = document.querySelectorAll('.option-item');
                 options.forEach((opt, i) => {

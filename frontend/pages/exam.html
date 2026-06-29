@@ -74,21 +74,21 @@
                     <div style="font-size: 2.5rem;">📝</div>
                     <h3 style="color: #1a237e;">Theory</h3>
                     <p style="font-size: 0.85rem; color: #666;">Regulations, calculations, standards</p>
-                    <span style="background: #e3f2fd; color: #1565c0; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">100 Questions</span>
+                    <span id="theoryCount" style="background: #e3f2fd; color: #1565c0; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">40 Questions</span>
                 </div>
                 
                 <div id="practicalCard" class="type-card" onclick="selectExamType('practical')">
                     <div style="font-size: 2.5rem;">🔧</div>
                     <h3 style="color: #1a237e;">Practical</h3>
                     <p style="font-size: 0.85rem; color: #666;">Real-world scenarios & field problems</p>
-                    <span style="background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">60 Scenarios</span>
+                    <span id="practicalCount" style="background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">8 Scenarios</span>
                 </div>
                 
                 <div id="mixedCard" class="type-card" onclick="selectExamType('mixed')">
                     <div style="font-size: 2.5rem;">🎯</div>
                     <h3 style="color: #1a237e;">Mixed</h3>
                     <p style="font-size: 0.85rem; color: #666;">Both theory & practical combined</p>
-                    <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">160 Questions</span>
+                    <span id="mixedCount" style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem;">40 Questions</span>
                 </div>
             </div>
             
@@ -106,7 +106,7 @@
                     <span style="color: #666;">Question</span>
                     <span id="currentQuestionNum" style="font-weight: bold; color: #1a237e;">1</span>
                     <span style="color: #666;">/</span>
-                    <span id="totalQuestions" style="color: #666;">10</span>
+                    <span id="totalQuestions" style="color: #666;">40</span>
                     <span id="examTypeLabel" style="margin-left: 10px; font-size: 0.85rem; color: #ff9800;"></span>
                 </div>
                 <div class="timer" id="timer">00:00</div>
@@ -153,6 +153,7 @@
                 </div>
             </div>
             
+            <!-- Marking Scheme Review -->
             <div id="reviewSection" style="display: none;">
                 <div class="card">
                     <div class="card-header">
@@ -181,17 +182,27 @@
         let startTime = null;
         let currentReviewData = null;
         let selectedExamType = null;
+        let isPremiumUser = false;
 
         async function checkPremiumStatus() {
             try {
                 const data = await EPRA.apiRequest('/premium/status', 'GET', null, 'student');
                 const infoDiv = document.getElementById('premiumInfo');
+                isPremiumUser = data.is_premium;
                 
                 if (data.is_premium) {
-                    infoDiv.innerHTML = '<span class="premium-badge">Premium - Full Exam with Marking Scheme</span>';
+                    infoDiv.innerHTML = '<span class="premium-badge"><i class="fas fa-crown"></i> Premium - EPRA Realistic Exam (40 Theory / 8 Practical / 40 Mixed)</span>';
+                    // Update card counts for premium
+                    document.getElementById('theoryCount').textContent = '40 Questions';
+                    document.getElementById('practicalCount').textContent = '8 Scenarios';
+                    document.getElementById('mixedCount').textContent = '40 Questions';
                 } else {
-                    infoDiv.innerHTML = '<span class="free-badge">Free - Basic Exam (5 Questions)</span> ' +
-                        '<br><a href="upgrade.html" style="color:#ff9800;">Upgrade for full exam & detailed marking schemes</a>';
+                    infoDiv.innerHTML = '<span class="free-badge">Free Trial - 5 Questions</span> ' +
+                        '<br><a href="upgrade.html" style="color:#ff9800;"><i class="fas fa-crown"></i> Upgrade for full EPRA exam simulation (40 questions)</a>';
+                    // Update card counts for free
+                    document.getElementById('theoryCount').textContent = '5 Questions';
+                    document.getElementById('practicalCount').textContent = '2 Scenarios';
+                    document.getElementById('mixedCount').textContent = '5 Questions';
                 }
             } catch (error) {
                 console.error('Failed to check premium status:', error);
@@ -215,8 +226,11 @@
             startBtn.disabled = false;
             startBtn.style.opacity = '1';
             
-            const typeLabels = { theory: 'Theory', practical: 'Practical', mixed: 'Mixed (Both)' };
-            startBtn.innerHTML = `<i class="fas fa-play"></i> Start ${typeLabels[type]} Exam`;
+            const typeLabels = { theory: '📝 Theory', practical: '🔧 Practical', mixed: '🎯 Mixed' };
+            const questionCount = isPremiumUser ? 
+                { theory: '40', practical: '8', mixed: '40' } : 
+                { theory: '5', practical: '2', mixed: '5' };
+            startBtn.innerHTML = `<i class="fas fa-play"></i> Start ${typeLabels[type]} Exam (${questionCount[type]} Qs)`;
         }
 
         async function startExam() {
@@ -252,8 +266,11 @@
                 EPRA.showMessage('Failed to start exam: ' + error.message, 'error', 'message-container');
                 const startBtn = document.getElementById('startExamBtn');
                 startBtn.disabled = false;
-                const typeLabels = { theory: 'Theory', practical: 'Practical', mixed: 'Mixed (Both)' };
-                startBtn.innerHTML = `<i class="fas fa-play"></i> Start ${typeLabels[selectedExamType]} Exam`;
+                const typeLabels = { theory: '📝 Theory', practical: '🔧 Practical', mixed: '🎯 Mixed' };
+                const questionCount = isPremiumUser ? 
+                    { theory: '40', practical: '8', mixed: '40' } : 
+                    { theory: '5', practical: '2', mixed: '5' };
+                startBtn.innerHTML = `<i class="fas fa-play"></i> Start ${typeLabels[selectedExamType]} Exam (${questionCount[selectedExamType]} Qs)`;
             }
         }
 
@@ -349,7 +366,7 @@
                     <div class="stats-grid" style="margin-top: 1.5rem;">
                         <div class="stat-card">
                             <h2 style="color: ${passed ? '#4caf50' : '#f44336'};">${data.percentage}%</h2>
-                            <p>Score</p>
+                            <p>Score (Pass: 70%)</p>
                         </div>
                         <div class="stat-card">
                             <h2>${data.score}/${data.total}</h2>

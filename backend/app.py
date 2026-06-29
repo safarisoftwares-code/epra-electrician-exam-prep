@@ -232,7 +232,7 @@ def get_exam_questions():
 @app.route('/api/exam/start', methods=['POST'])
 @jwt_required()
 def start_exam():
-    """Start a new exam session with optional type filter"""
+    """Start a new exam session with EPRA-realistic question counts"""
     try:
         identity = get_jwt_identity()
         if not identity.startswith('user_'):
@@ -241,10 +241,23 @@ def start_exam():
         user_id = int(identity.replace('user_', ''))
         premium = is_premium_user(user_id)
         
-        # Get exam type from query parameter
         exam_type = request.args.get('type', 'mixed')
         
-        limit = 100 if premium else 5
+        # EPRA-realistic question counts
+        if premium:
+            limits = {
+                'theory': 40,    # 40 questions from 100 theory pool
+                'practical': 8,  # 8 scenarios from 60 practical pool
+                'mixed': 40      # 40 questions from 160 total pool
+            }
+        else:
+            limits = {
+                'theory': 5,     # Free trial
+                'practical': 2,  # Free trial
+                'mixed': 5       # Free trial
+            }
+        
+        limit = limits.get(exam_type, 40)
         
         # Build query based on exam type
         query = Question.query.filter_by(is_active=True)
@@ -253,7 +266,6 @@ def start_exam():
             query = query.filter(~Question.question_text.like('PRACTICAL:%'))
         elif exam_type == 'practical':
             query = query.filter(Question.question_text.like('PRACTICAL:%'))
-        # 'mixed' returns all questions
         
         questions = query.order_by(db.func.random()).limit(limit).all()
         
