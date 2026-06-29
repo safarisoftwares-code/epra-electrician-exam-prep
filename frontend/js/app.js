@@ -1,7 +1,7 @@
 // ==============================
 // CONFIGURATION
 // ==============================
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 const STUDENT_TOKEN_KEY = 'student_token';
 const ADMIN_TOKEN_KEY = 'admin_token';
 
