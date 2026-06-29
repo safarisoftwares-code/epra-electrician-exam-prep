@@ -17,7 +17,7 @@
 <script>var t=localStorage.getItem("admin_token");if(!t)location.href="login.html";
 
 function loadPayments(s){s=s||"all";
-fetch("http://localhost:5000/api/admin/payments?status="+s,{headers:{"Authorization":"Bearer "+t}}).then(r=>r.json()).then(d=>{
+fetch("/api/admin/payments?status="+s,{headers:{"Authorization":"Bearer "+t}}).then(r=>r.json()).then(d=>{
     var h="<table style='width:100%;background:#fff;border-radius:10px;padding:20px'><tr><th>ID</th><th>Amount</th><th>Phone</th><th>Status</th><th>Action</th></tr>";
     d.forEach(function(p){
         h+="<tr><td>"+p.id+"</td><td>KES "+p.amount+"</td><td>"+p.phone+"</td><td>"+p.status+"</td><td>"+
@@ -31,7 +31,7 @@ fetch("http://localhost:5000/api/admin/payments?status="+s,{headers:{"Authorizat
 
 function verify(id){
     if(confirm("Verify this payment and generate activation key?")){
-        fetch("http://localhost:5000/api/admin/verify-payment",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({payment_id:id})})
+        fetch("/api/admin/verify-payment",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({payment_id:id})})
         .then(r=>r.json()).then(d=>{
             var today=new Date().toLocaleDateString();
             var receipt='<div class="receipt" id="receiptPrint"><h3>EPRA Exam Prep - Premium Activation</h3><div class="detail"><span>Date:</span><span>'+today+'</span></div><div class="detail"><span>Plan:</span><span>Premium (1 Year)</span></div><div class="detail"><span>Amount:</span><span>KES 2,500</span></div><div class="detail"><span>Key:</span><span><b>'+d.activation_key+'</b></span></div><div class="detail"><span>Password:</span><span><b>'+d.password+'</b></span></div><p style="text-align:center;margin-top:15px">Safari Softwares<br>safarisoftwares@gmail.com<br>WhatsApp: 0112168732</p></div>';

@@ -26,7 +26,7 @@
 
 function generateKeys(){
     var c=document.getElementById("count").value,d=document.getElementById("duration").value;
-    fetch("http://localhost:5000/api/admin/generate-key",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({count:parseInt(c),duration_days:parseInt(d)})})
+    fetch("/api/admin/generate-key",{method:"POST",headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify({count:parseInt(c),duration_days:parseInt(d)})})
     .then(r=>r.json()).then(data=>{
         var h="<h3 style='color:green'>Generated Keys (Click Copy or Print):</h3>";
         data.keys.forEach(function(k,i){
@@ -53,7 +53,7 @@ function printReceipt(i,key,pass){
 }
 
 function loadKeys(){
-    fetch("http://localhost:5000/api/admin/keys",{headers:{"Authorization":"Bearer "+t}}).then(r=>r.json()).then(d=>{
+    fetch("/api/admin/keys",{headers:{"Authorization":"Bearer "+t}}).then(r=>r.json()).then(d=>{
         var h="<table style='width:100%'><tr><th>Key</th><th>Status</th><th>Created</th></tr>";
         d.forEach(function(k){h+="<tr><td>"+k.key+"</td><td style='color:"+(k.is_used?"#f44336":"#4caf50")+"'>"+(k.is_used?"Used":"Available")+"</td><td>"+k.created_at+"</td></tr>"});
         h+="</table>";document.getElementById("keyList").innerHTML=h;
