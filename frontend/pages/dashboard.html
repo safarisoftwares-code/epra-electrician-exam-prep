@@ -6,18 +6,54 @@
     <title>Student Dashboard - EPRA Exam Prep</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .nav-links { display: flex; gap: 5px; }
+        .nav-links a { 
+            padding: 8px 16px; 
+            border-radius: 6px; 
+            color: #fff; 
+            text-decoration: none; 
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active { 
+            background: rgba(255,255,255,0.15); 
+        }
+        .nav-right { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+        .nav-user { 
+            color: #ff9800; 
+            font-weight: 600; 
+            font-size: 0.95rem; 
+        }
+    </style>
 </head>
 <body>
+    <!-- Navigation Bar -->
     <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <span>⚡ Student Dashboard</span>
+        <div class="nav-container" style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1400px;">
+            <!-- Left: Brand + Navigation -->
+            <div style="display: flex; align-items: center; gap: 30px;">
+                <div class="nav-brand">
+                    <span>⚡ EPRA Exam Prep</span>
+                </div>
+                <div class="nav-links">
+                    <a href="dashboard.html" class="active">📊 Dashboard</a>
+                    <a href="exam.html">📝 Exam</a>
+                    <a href="study.html">📚 Study</a>
+                    <a href="upgrade.html" style="color:#ff9800;">💎 Upgrade</a>
+                </div>
             </div>
-            <div class="nav-actions">
-                <a href="exam.html" class="btn btn-primary">Take Exam</a>
-                <a href="study.html" class="btn btn-outline">Study Mode</a>
-                <a href="upgrade.html" class="btn btn-outline" style="color:#ff9800;border-color:#ff9800;">💎 Upgrade</a>
-                <button onclick="EPRA.logout('student')" class="btn btn-outline">Logout</button>
+            
+            <!-- Right: User + Logout -->
+            <div class="nav-right">
+                <span class="nav-user" id="navStudentName">👤 Student</span>
+                <button onclick="EPRA.logout('student')" class="btn btn-outline" style="padding: 8px 16px; border-color: #f44336; color: #ff8a80; font-size: 0.9rem;">
+                    🚪 Logout
+                </button>
             </div>
         </div>
     </nav>
@@ -100,18 +136,17 @@
 
     <script src="../js/app.js"></script>
     <script>
-        // Check authentication
         if (!EPRA.requireAuth('student')) {
             window.location.href = 'login.html';
         }
 
-        // Load dashboard data
         async function loadDashboard() {
             try {
                 const data = await EPRA.apiRequest('/student/dashboard', 'GET', null, 'student');
                 
-                // Update student name
+                // Update student name in both places
                 document.getElementById('studentName').textContent = data.user.full_name;
+                document.getElementById('navStudentName').textContent = '👤 ' + data.user.full_name;
                 
                 // Update stats
                 document.getElementById('totalExams').textContent = data.stats.total_exams;
@@ -135,12 +170,10 @@
                     `;
                 }
                 
-                // Display recent exams
                 displayRecentExams(data.recent_exams);
                 
             } catch (error) {
                 EPRA.showMessage('Failed to load dashboard: ' + error.message, 'error', 'message-container');
-                
                 if (error.message.includes('Invalid token')) {
                     EPRA.logout('student');
                 }
@@ -195,77 +228,32 @@
             }
         }
 
-        // View exam review in modal
         async function viewExamReview(examId) {
             try {
                 const data = await EPRA.apiRequest(`/exam/review/${examId}`, 'GET', null, 'student');
                 
-                // Build review HTML
                 let reviewHTML = '';
                 
                 data.questions.forEach((question, index) => {
-                    let statusClass = 'not-answered';
-                    let statusIcon = '⚠️';
-                    
-                    if (question.user_answer === 'Not answered') {
-                        statusClass = 'not-answered';
-                        statusIcon = '⚠️ Not Answered';
-                    } else if (question.is_correct) {
-                        statusClass = 'correct';
-                        statusIcon = '✅ Correct';
-                    } else {
-                        statusClass = 'incorrect';
-                        statusIcon = '❌ Incorrect';
-                    }
+                    let statusIcon = question.is_correct ? '✅ Correct' : 
+                                    question.user_answer === 'Not answered' ? '⚠️ Not Answered' : '❌ Incorrect';
                     
                     reviewHTML += `
                         <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; 
                                     border-left: 5px solid ${question.is_correct ? '#4caf50' : question.user_answer === 'Not answered' ? '#ff9800' : '#f44336'};
                                     box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                            <h4 style="margin-bottom: 10px;">
-                                Question ${index + 1}: ${statusIcon}
-                                <span style="font-size: 0.85rem; color: #666;">(${question.category})</span>
-                            </h4>
-                            <p style="font-weight: 500; margin-bottom: 15px;">${question.question_text}</p>
-                            
-                            <div style="margin-bottom: 15px;">
+                            <h4 style="margin-bottom: 10px;">Question ${index + 1}: ${statusIcon}</h4>
+                            <p style="font-weight: 500;">${question.question_text}</p>
+                            <div style="margin: 10px 0;">
                                 ${question.options.map(option => {
-                                    let bgColor = 'white';
-                                    let borderColor = '#ddd';
+                                    let style = 'padding: 8px; margin: 3px 0; border-radius: 6px; border: 1px solid #ddd;';
                                     let label = '';
-                                    
-                                    if (option === question.correct_answer) {
-                                        bgColor = '#e8f5e9';
-                                        borderColor = '#4caf50';
-                                        label = ' ✓ (Correct Answer)';
-                                    }
-                                    if (option === question.user_answer && option !== question.correct_answer) {
-                                        bgColor = '#ffebee';
-                                        borderColor = '#f44336';
-                                        label = ' ← (Your Answer)';
-                                    }
-                                    if (option === question.correct_answer && option === question.user_answer) {
-                                        bgColor = '#e8f5e9';
-                                        borderColor = '#4caf50';
-                                        label = ' ✓ (Correct - Your Answer)';
-                                    }
-                                    
-                                    return `<div style="padding: 10px; margin: 5px 0; border-radius: 8px; 
-                                                  border: 1px solid ${borderColor}; background: ${bgColor};">
-                                        ${option}${label}
-                                    </div>`;
+                                    if (option === question.correct_answer) { style += 'background: #e8f5e9; border-color: #4caf50;'; label = ' ✓'; }
+                                    if (option === question.user_answer && option !== question.correct_answer) { style += 'background: #ffebee; border-color: #f44336;'; label = ' ← Your Answer'; }
+                                    return `<div style="${style}">${option}${label}</div>`;
                                 }).join('')}
                             </div>
-                            
-                            ${question.explanation ? `
-                                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-top: 10px; 
-                                            border-left: 4px solid #2196f3;">
-                                    <strong>📖 Explanation:</strong>
-                                    <p style="margin-top: 5px;">${question.explanation}</p>
-                                    ${question.regulation_reference ? `<p style="margin-top: 8px;"><strong>📋 Regulation:</strong> ${question.regulation_reference}</p>` : ''}
-                                    ${question.practical_tip ? `<p style="margin-top: 8px;"><strong>💡 Practical Tip:</strong> ${question.practical_tip}</p>` : ''}
-                                </div>
-                            ` : ''}
+                            ${question.explanation ? `<div style="background: #e3f2fd; padding: 10px; border-radius: 6px; margin-top: 10px;"><strong>📖 Explanation:</strong> ${question.explanation}</div>` : ''}
                         </div>
                     `;
                 });
@@ -282,45 +270,28 @@
             document.getElementById('reviewModal').classList.remove('active');
         }
 
-        // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('reviewModal');
-            if (event.target === modal) {
-                modal.classList.remove('active');
-            }
+            if (event.target === modal) modal.classList.remove('active');
         }
 
-        // Clear exam history
         async function clearHistory() {
-            if (!confirm('Are you sure you want to delete ALL your exam history? This cannot be undone.')) {
-                return;
-            }
-            
-            // Double confirmation
-            if (!confirm('This will permanently delete all your exam records. Are you absolutely sure?')) {
-                return;
-            }
+            if (!confirm('Delete ALL exam history? This cannot be undone.')) return;
+            if (!confirm('Are you absolutely sure?')) return;
             
             try {
                 const data = await EPRA.apiRequest('/exam/history/clear', 'DELETE', null, 'student');
-                EPRA.showMessage(`✅ ${data.message}`, 'success', 'message-container');
-                
-                // Reload dashboard after short delay
-                setTimeout(() => {
-                    loadDashboard();
-                }, 1000);
-                
+                EPRA.showMessage('✅ ' + data.message, 'success', 'message-container');
+                setTimeout(() => loadDashboard(), 1000);
             } catch (error) {
                 EPRA.showMessage('Failed to clear history: ' + error.message, 'error', 'message-container');
             }
         }
 
-        // View all exams
         function viewAllExams() {
             window.location.href = 'exam-history.html';
         }
 
-        // Load on page start
         loadDashboard();
     </script>
 </body>
