@@ -7,45 +7,19 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        .comparison-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        .comparison-table th {
-            background: #1a237e;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        .comparison-table td {
-            padding: 12px 15px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
-        .comparison-table tr:hover {
-            background: #f5f5f5;
-        }
-        .check-icon {
-            color: #4caf50;
-            font-size: 1.2rem;
-        }
-        .cross-icon {
-            color: #f44336;
-            font-size: 1.2rem;
-        }
-        .disabled-form {
-            opacity: 0.6;
-            pointer-events: none;
-        }
+        .comparison-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .comparison-table th { background: #1a237e; color: white; padding: 15px; text-align: center; }
+        .comparison-table td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #ddd; }
+        .comparison-table tr:hover { background: #f5f5f5; }
+        .check-icon { color: #4caf50; font-size: 1.2rem; }
+        .cross-icon { color: #f44336; font-size: 1.2rem; }
+        .disabled-form { opacity: 0.6; pointer-events: none; }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <div class="nav-brand">
-                <span>⚡ Upgrade to Premium</span>
-            </div>
+            <div class="nav-brand"><span>⚡ Upgrade to Premium</span></div>
             <div class="nav-actions">
                 <a href="dashboard.html" class="btn btn-outline">← Dashboard</a>
                 <a href="../index.html" class="btn btn-outline">Home</a>
@@ -62,7 +36,6 @@
             <h2 style="color: #1a237e; text-align: center; margin-bottom: 1.5rem;">
                 <i class="fas fa-balance-scale"></i> Free vs Premium Comparison
             </h2>
-            
             <div class="table-container">
                 <table class="comparison-table">
                     <thead>
@@ -114,10 +87,10 @@
                             <td style="background: #fff8e1;"><span class="check-icon">✓</span> Class C, B & A</td>
                         </tr>
                         <tr>
-    <td style="text-align: left;"><strong>Regulations Library</strong></td>
-    <td><span class="cross-icon">✗</span> Locked</td>
-    <td style="background: #fff8e1;"><span class="check-icon">✓</span> Full BS 7671 & EPRA Reference</td>
-</tr>
+                            <td style="text-align: left;"><strong>Regulations Library</strong></td>
+                            <td><span class="cross-icon">✗</span> Locked</td>
+                            <td style="background: #fff8e1;"><span class="check-icon">✓</span> Full BS 7671 & EPRA Reference</td>
+                        </tr>
                         <tr>
                             <td style="text-align: left;"><strong>Progress Tracking</strong></td>
                             <td><span class="check-icon">✓</span> Basic</td>
@@ -138,7 +111,6 @@
             <h2 style="color: #1a237e;">Premium Access</h2>
             <div class="price">KES 2,500<span>/year</span></div>
             <p style="color: #666;">One-time payment for 365 days of full access</p>
-            
             <ul class="benefits-list">
                 <li>✓ 40 Theory Questions (EPRA-realistic exam)</li>
                 <li>✓ 8 Practical Scenarios</li>
@@ -147,21 +119,17 @@
                 <li>✓ Detailed BS 7671 & EPRA References</li>
                 <li>✓ Expert Practical Tips</li>
                 <li>✓ All Certification Classes (C, B, A)</li>
+                <li>✓ Regulations Reference Library</li>
                 <li>✓ Advanced Progress Analytics</li>
             </ul>
         </div>
 
-        <!-- Activation Key Tab -->
+        <!-- Activation Key -->
         <div class="card" style="margin-bottom: 2rem;">
             <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-key" style="color: #ff9800;"></i> 
-                    Activate with Key
-                </h3>
+                <h3 class="card-title"><i class="fas fa-key" style="color: #ff9800;"></i> Activate with Key</h3>
             </div>
-            <p style="color: #666; margin-bottom: 1rem;">
-                Already purchased a key? Enter it below to activate your premium access immediately.
-            </p>
+            <p style="color: #666; margin-bottom: 1rem;">Already purchased a key? Enter it below to activate your premium access immediately.</p>
             
             <div id="activateLoginMsg" style="display: none; text-align: center; padding: 15px; background: #e3f2fd; border-radius: 8px; margin-bottom: 15px;">
                 <a href="login.html" style="color: #1a237e; font-weight: 600;">🔐 Login</a> or 
@@ -171,29 +139,22 @@
             <form id="activateForm">
                 <div class="form-group">
                     <label for="activationKey">Activation Key</label>
-                    <input type="text" id="activationKey" class="form-control" 
-                           placeholder="Format: EPRA-XXXX-XXXX-XXXX" required>
+                    <input type="text" id="activationKey" class="form-control" placeholder="Format: EPRA-XXXX-XXXX-XXXX" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="activationPassword">Password</label>
-                    <input type="text" id="activationPassword" class="form-control" 
-                           placeholder="Enter the password provided with your key" required>
+                    <input type="text" id="activationPassword" class="form-control" placeholder="Enter the password provided with your key" required>
                 </div>
-                
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     <i class="fas fa-unlock"></i> Activate Premium Now
                 </button>
             </form>
         </div>
 
-                <!-- M-Pesa Payment -->
+        <!-- M-Pesa Payment -->
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-mobile-alt" style="color: #4caf50;"></i>
-                    Pay with M-Pesa
-                </h3>
+                <h3 class="card-title"><i class="fas fa-mobile-alt" style="color: #4caf50;"></i> Pay with M-Pesa</h3>
             </div>
             <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 1.5rem;">
                 <h4 style="color: #2e7d32; margin-bottom: 15px;">📱 How to Pay:</h4>
@@ -211,16 +172,16 @@
             <div style="background: #fff3e0; padding: 20px; border-radius: 8px; border: 2px solid #ff9800; text-align: center;">
                 <h4 style="color: #e65100; margin-bottom: 15px;">📩 After Payment - Send Confirmation To:</h4>
                 <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-                    <div style="background: white; padding: 15px 25px; border-radius: 10px; text-align: center;">
+                    <a href="https://wa.me/254112168732" style="background: white; padding: 15px 25px; border-radius: 10px; text-align: center; text-decoration: none; color: #333;">
                         <div style="font-size: 2rem;">💬</div>
                         <strong>WhatsApp</strong><br>
-                        <a href="https://wa.me/254112168732" style="color: #4caf50; font-size: 1.1rem; font-weight: 600;">+254112168732</a>
-                    </div>
-                    <div style="background: white; padding: 15px 25px; border-radius: 10px; text-align: center;">
+                        <span style="color: #4caf50; font-size: 1.1rem; font-weight: 600;">+254112168732</span>
+                    </a>
+                    <a href="mailto:safarisoftwares@gmail.com" style="background: white; padding: 15px 25px; border-radius: 10px; text-align: center; text-decoration: none; color: #333;">
                         <div style="font-size: 2rem;">✉️</div>
                         <strong>Email</strong><br>
-                        <a href="mailto:safarisoftwares@gmail.com" style="color: #1a237e; font-size: 1rem; font-weight: 600;">safarisoftwares@gmail.com</a>
-                    </div>
+                        <span style="color: #1a237e; font-size: 1rem; font-weight: 600;">safarisoftwares@gmail.com</span>
+                    </a>
                 </div>
                 <p style="margin-top: 15px; color: #e65100; font-weight: 600;">
                     ⏰ You will receive your <strong>Activation Key & Password</strong> within 24 hours
@@ -235,10 +196,8 @@
         <div class="card" style="margin-top: 2rem; text-align: center; background: #e3f2fd;">
             <p style="margin: 0;">
                 <i class="fas fa-question-circle"></i> 
-                <strong>Need help?</strong> Contact us at 
-                <a href="mailto:safarisoftwares@gmail.com" style="color: #1a237e; font-weight: 600;">
-                    safarisoftwares@gmail.com
-                </a>
+                <strong>Need help?</strong> 
+                <a href="mailto:safarisoftwares@gmail.com" style="color: #1a237e; font-weight: 600;">safarisoftwares@gmail.com</a>
                 | 💬 <a href="https://wa.me/254112168732" style="color: #4caf50; font-weight: 600;">WhatsApp</a>
             </p>
         </div>
@@ -246,14 +205,11 @@
 
     <script src="../js/app.js"></script>
     <script>
-        // CHECK LOGIN STATUS WITHOUT REDIRECTING
         const isLoggedIn = !!EPRA.getToken('student');
-        
-        // Load premium status
+
         async function loadStatus() {
             const statusDiv = document.getElementById('currentStatus');
             
-            // If NOT logged in - show the page freely with login prompts
             if (!isLoggedIn) {
                 statusDiv.innerHTML = `
                     <div class="alert alert-info" style="text-align: center;">
@@ -261,21 +217,14 @@
                         <strong>Viewing pricing & benefits.</strong><br>
                         <a href="login.html" style="color: #1a237e; font-weight: 600;">🔐 Login</a> or 
                         <a href="register.html" style="color: #ff9800; font-weight: 600;">📝 Register</a> to activate premium.
-                    </div>
-                `;
-                // Show login prompts for forms
+                    </div>`;
                 document.getElementById('activateLoginMsg').style.display = 'block';
-                document.getElementById('paymentLoginMsg').style.display = 'block';
-                // Disable form inputs gently
                 document.getElementById('activateForm').classList.add('disabled-form');
-                document.getElementById('paymentForm').classList.add('disabled-form');
                 return;
             }
             
-            // User IS logged in - check premium status
             try {
                 const data = await EPRA.apiRequest('/premium/status', 'GET', null, 'student');
-                
                 if (data.is_premium) {
                     statusDiv.innerHTML = `
                         <div class="alert alert-success">
@@ -283,34 +232,23 @@
                             <strong>Premium Active!</strong> 
                             Expires: ${EPRA.formatDate(data.expires)} 
                             (${data.days_remaining} days remaining)
-                        </div>
-                    `;
-                    // Disable forms - already premium
+                        </div>`;
                     document.getElementById('activateForm').classList.add('disabled-form');
-                    document.getElementById('paymentForm').classList.add('disabled-form');
                 } else {
                     statusDiv.innerHTML = `
                         <div class="alert alert-warning">
                             <i class="fas fa-info-circle"></i> 
                             You're on the <strong>Free Plan</strong>. Upgrade now!
-                        </div>
-                    `;
-                    // Forms are active - ready to use
+                        </div>`;
                 }
             } catch (error) {
                 console.error('Status check failed:', error);
             }
         }
 
-        // Activate with key
         document.getElementById('activateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // Require login to activate
-            if (!isLoggedIn) {
-                window.location.href = 'login.html';
-                return;
-            }
+            if (!isLoggedIn) { window.location.href = 'login.html'; return; }
             
             const key = document.getElementById('activationKey').value.trim();
             const password = document.getElementById('activationPassword').value.trim();
@@ -325,17 +263,9 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Activating...';
             
             try {
-                const data = await EPRA.apiRequest('/premium/activate', 'POST', {
-                    key: key,
-                    password: password
-                }, 'student');
-                
+                const data = await EPRA.apiRequest('/premium/activate', 'POST', { key: key, password: password }, 'student');
                 EPRA.showMessage('✅ Premium activated! Redirecting...', 'success', 'message-container');
-                
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 2000);
-                
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
             } catch (error) {
                 EPRA.showMessage('❌ ' + (error.message || 'Activation failed'), 'error', 'message-container');
                 submitBtn.disabled = false;
@@ -343,51 +273,6 @@
             }
         });
 
-                  
-            // Require login to submit payment
-            if (!isLoggedIn) {
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            const transactionId = document.getElementById('transactionId').value.trim();
-            const phone = document.getElementById('phoneNumber').value.trim();
-            
-            if (!transactionId || !phone) {
-                EPRA.showMessage('Please enter both transaction ID and phone number', 'error', 'message-container');
-                return;
-            }
-            
-            const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-            
-            try {
-                const data = await EPRA.apiRequest('/premium/payment', 'POST', {
-                    transaction_id: transactionId,
-                    phone: phone,
-                    amount: 2500,
-                    payment_method: 'mpesa'
-                }, 'student');
-                
-                EPRA.showMessage(
-                    '✅ Payment submitted! Key sent within 24 hours via email/WhatsApp.', 
-                    'success', 
-                    'message-container'
-                );
-                
-                document.getElementById('paymentForm').reset();
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Payment for Verification';
-                
-            } catch (error) {
-                EPRA.showMessage('❌ ' + (error.message || 'Payment submission failed'), 'error', 'message-container');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Payment for Verification';
-            }
-        });
-
-        // Initialize
         loadStatus();
     </script>
 </body>
