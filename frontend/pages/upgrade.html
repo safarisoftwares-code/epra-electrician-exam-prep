@@ -187,7 +187,7 @@
             </form>
         </div>
 
-        <!-- M-Pesa Payment Tab -->
+                <!-- M-Pesa Payment -->
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">
@@ -197,45 +197,38 @@
             </div>
             <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 1.5rem;">
                 <h4 style="color: #2e7d32; margin-bottom: 15px;">📱 How to Pay:</h4>
-                <ol style="line-height: 2; margin-left: 20px; color: #333;">
+                <ol style="line-height: 2.2; margin-left: 20px; color: #333;">
                     <li>Go to <strong>M-Pesa</strong> on your phone</li>
                     <li>Select <strong>Lipa na M-Pesa</strong> → <strong>Paybill</strong></li>
-                    <li>Enter Paybill: <strong style="color: #1a237e; font-size: 1.1rem;">516600</strong></li>
-                    <li>Enter Account: <strong style="color: #ff9800; font-size: 1.1rem;">528591</strong></li>
-                    <li>Enter Amount: <strong style="color: #ff9800; font-size: 1.1rem;">KES 2,500</strong></li>
+                    <li>Enter <strong>Paybill:</strong> <span style="color: #1a237e; font-size: 1.1rem; font-weight: 700;">516600</span></li>
+                    <li>Enter <strong>Account:</strong> <span style="color: #ff9800; font-size: 1.1rem; font-weight: 700;">528591</span></li>
+                    <li>Enter <strong>Amount:</strong> <span style="color: #ff9800; font-size: 1.1rem; font-weight: 700;">KES 2,500</span></li>
                     <li>Enter your M-Pesa PIN and confirm</li>
-                    <li>You'll receive a confirmation SMS with a transaction ID</li>
-                    <li>Enter the transaction ID below to verify your payment</li>
+                    <li>You will receive a confirmation SMS</li>
                 </ol>
             </div>
             
-            <div id="paymentLoginMsg" style="display: none; text-align: center; padding: 15px; background: #e3f2fd; border-radius: 8px; margin-bottom: 15px;">
-                <a href="login.html" style="color: #1a237e; font-weight: 600;">🔐 Login</a> or 
-                <a href="register.html" style="color: #ff9800; font-weight: 600;">📝 Register</a> to submit payment
-            </div>
-            
-            <form id="paymentForm">
-                <div class="form-group">
-                    <label for="transactionId">M-Pesa Transaction ID</label>
-                    <input type="text" id="transactionId" class="form-control" 
-                           placeholder="e.g., QWE1234567 (from M-Pesa SMS)" required>
+            <div style="background: #fff3e0; padding: 20px; border-radius: 8px; border: 2px solid #ff9800; text-align: center;">
+                <h4 style="color: #e65100; margin-bottom: 15px;">📩 After Payment - Send Confirmation To:</h4>
+                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                    <div style="background: white; padding: 15px 25px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2rem;">💬</div>
+                        <strong>WhatsApp</strong><br>
+                        <a href="https://wa.me/254112168732" style="color: #4caf50; font-size: 1.1rem; font-weight: 600;">+254112168732</a>
+                    </div>
+                    <div style="background: white; padding: 15px 25px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2rem;">✉️</div>
+                        <strong>Email</strong><br>
+                        <a href="mailto:safarisoftwares@gmail.com" style="color: #1a237e; font-size: 1rem; font-weight: 600;">safarisoftwares@gmail.com</a>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label for="phoneNumber">M-Pesa Phone Number</label>
-                    <input type="tel" id="phoneNumber" class="form-control" 
-                           placeholder="e.g., 0712345678" required>
-                </div>
-                
-                <button type="submit" class="btn btn-success" style="width: 100%;">
-                    <i class="fas fa-check-circle"></i> Submit Payment for Verification
-                </button>
-                
-                <p style="text-align: center; margin-top: 10px; color: #666; font-size: 0.9rem;">
-                    Activation key and password sent within 24 hours via<br>
-                    ✉️ safarisoftwares@gmail.com | 💬 WhatsApp: +254112168732
+                <p style="margin-top: 15px; color: #e65100; font-weight: 600;">
+                    ⏰ You will receive your <strong>Activation Key & Password</strong> within 24 hours
                 </p>
-            </form>
+                <p style="font-size: 0.85rem; color: #666;">
+                    Include your M-Pesa transaction ID and registered email/username in your message
+                </p>
+            </div>
         </div>
 
         <!-- Need Help -->
@@ -350,10 +343,7 @@
             }
         });
 
-        // Submit payment
-        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
+                  
             // Require login to submit payment
             if (!isLoggedIn) {
                 window.location.href = 'login.html';
