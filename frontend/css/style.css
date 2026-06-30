@@ -62,6 +62,7 @@ a {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
+    justify-content: space-between;
 }
 
 .nav-brand {
@@ -79,7 +80,6 @@ a {
 .nav-menu {
     display: flex;
     align-items: center;
-    margin-left: auto;
     gap: 10px;
 }
 
@@ -101,7 +101,6 @@ a {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-left: 20px;
 }
 
 .user-name {
@@ -115,8 +114,14 @@ a {
     background: none;
     border: none;
     color: var(--white);
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     cursor: pointer;
+    margin-left: auto;
+}
+
+/* Mobile auth links - hidden on desktop */
+.mobile-auth {
+    display: none;
 }
 
 /* ==============================
@@ -907,7 +912,7 @@ tr:last-child td {
    UPGRADE PAGE
    ============================== */
 .upgrade-container {
-    max-width: 600px;
+    max-width: 900px;
     margin: 3rem auto;
     padding: 2rem;
 }
@@ -989,9 +994,10 @@ tr:last-child td {
         font-size: 1.8rem;
         cursor: pointer;
         padding: 5px;
+        margin-left: auto;
     }
     
-    /* Hide auth buttons on mobile - they go in hamburger menu */
+    /* Hide desktop auth buttons on mobile */
     .nav-actions {
         display: none;
     }
