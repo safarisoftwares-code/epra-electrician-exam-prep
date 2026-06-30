@@ -9,7 +9,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
+        <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
                 <span class="brand-icon">⚡</span>
@@ -21,8 +21,13 @@
                 <a href="pages/exam.html" class="nav-link">Exam</a>
                 <a href="pages/study.html" class="nav-link">Study</a>
                 <a href="pages/upgrade.html" class="nav-link" style="color:#ff9800;font-weight:bold;">💎 Upgrade</a>
+                <!-- Mobile-only auth links -->
+                <div class="mobile-auth" id="mobileAuth">
+                    <a href="pages/login.html" class="login-link">🔐 Login</a>
+                    <a href="pages/register.html" class="register-link">📝 Register</a>
+                </div>
             </div>
-            <div class="nav-actions">
+            <div class="nav-actions" id="desktopAuth">
                 <div id="authButtons">
                     <a href="pages/login.html" class="btn btn-outline">Login</a>
                     <a href="pages/register.html" class="btn btn-primary">Register</a>
@@ -31,10 +36,10 @@
                     <span id="userName" class="user-name"></span>
                     <button onclick="EPRA.logout('student')" class="btn btn-outline">Logout</button>
                 </div>
-                <button class="menu-toggle" onclick="EPRA.toggleMenu()">
-                    <i class="fas fa-bars"></i>
-                </button>
             </div>
+            <button class="menu-toggle" onclick="EPRA.toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
     </nav>
 

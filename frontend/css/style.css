@@ -974,6 +974,7 @@ tr:last-child td {
         background: var(--primary-color);
         flex-direction: column;
         padding: 1rem;
+        z-index: 1000;
     }
     
     .nav-menu.active {
@@ -982,6 +983,44 @@ tr:last-child td {
     
     .menu-toggle {
         display: block;
+        background: none;
+        border: none;
+        color: var(--white);
+        font-size: 1.8rem;
+        cursor: pointer;
+        padding: 5px;
+    }
+    
+    /* Hide auth buttons on mobile - they go in hamburger menu */
+    .nav-actions {
+        display: none;
+    }
+    
+    /* Show auth links inside hamburger menu */
+    .nav-menu .mobile-auth {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .nav-menu .mobile-auth a {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+    
+    .nav-menu .mobile-auth .login-link {
+        background: rgba(255,255,255,0.15);
+        color: #fff;
+    }
+    
+    .nav-menu .mobile-auth .register-link {
+        background: #ff9800;
+        color: #fff;
     }
     
     .hero-title {
@@ -1012,7 +1051,7 @@ tr:last-child td {
     }
     
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
     }
     
     .dashboard-header {
